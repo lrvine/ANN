@@ -9,9 +9,10 @@ protected:
 	int neulayer2;
 	int neulayer3;
 	int numlayer=3;
-	double targeterror=0.001;
-	double learnrate=0.9;
-	double momentum=0.5;
+	double targeterror=0.000001;
+	double learnrate=0.01;
+	double momentum=0.2;
+	double maxwinit=0.3;
 	unsigned long long int maxepoch=32767;
 	double sigmoid(double);
 	double fsigmoid(double);

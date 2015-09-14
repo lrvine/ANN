@@ -38,12 +38,15 @@ ann::ann( char * train, char* test )
 		}
 		for(int j=0; j<neulayer3; j++){
 			training>>correct[i][j];
+		//	correct[i][j]-=1;
 		}
-		input[i][neulayer1]=-1;
+		//init bias
+		input[i][neulayer1]=1;
 	}
 	//store value of neulayer2
 	double * vlayer2 = new double[neulayer2+1];
-	vlayer2[neulayer2]=-1;
+	//init bais
+	vlayer2[neulayer2]=1;
 	//store value of neulayer3
 	double * vlayer3 = new double[neulayer3];
 
@@ -55,7 +58,7 @@ ann::ann( char * train, char* test )
 	double ***weight = new double **[numlayer-1];
 	double ***deltaw = new double **[numlayer-1];
 	double **deltag = new double *[numlayer-1];
-	for(int i=0; i<numlayer; i++){
+	for(int i=0; i<(numlayer-1); i++){
 		if(i==0){
 			weight[i] = new double *[neulayer1+1];
 			deltaw[i] = new double *[neulayer1+1];
@@ -67,7 +70,7 @@ ann::ann( char * train, char* test )
 				weight[i][j] = new double [neulayer2+1];
 				deltaw[i][j] = new double [neulayer2+1];
 				for(int k=0; k<neulayer2; k++){
-					weight[i][j][k]=( 2*(dist(mt)-0.5) );
+					weight[i][j][k]=( 2*(dist(mt)-0.5)*maxwinit );
 					deltaw[i][j][k]=0;
 				}
 			}
@@ -83,26 +86,41 @@ ann::ann( char * train, char* test )
 				weight[i][j] = new double [neulayer3];
 				deltaw[i][j] = new double [neulayer3];
 				for(int k=0; k<neulayer3; k++){
-					weight[i][j][k]=( 2*(dist(mt)-0.5) );
+					weight[i][j][k]=( 2*(dist(mt)-0.5)*maxwinit );
 					deltaw[i][j][k]=0;
 				}
 			}
 		}
 	}
 	
+	for(int j=0; j<=neulayer1; j++){
+		for(int k=0; k< neulayer2; k++){
+		  cout<<weight[0][j][k]<<" ";
+		}
+		cout<<endl;
+	}
+	cout<<endl;
+	for(int j=0; j<=neulayer2; j++){
+		for(int k=0; k< neulayer3; k++){
+		  cout<<weight[1][j][k]<<" ";
+		}
+		cout<<endl;
+	}
+	cout<<endl;
 
 	unsigned long long int epoch=0;
 	double error = numeric_limits<double>::max();
 	cout<<"begining of epoch "<<epoch<<" error is "<<error<<" "<<neulayer3<<" "<<neulayer2<<" "<<neulayer1<<endl;
-	maxepoch=10000;
+	maxepoch=30000;
 	while( epoch < maxepoch && error > targeterror ){
 		// train each pattern for one epoch
 		error=0;
 		for(int i=0; i< traininstances ; i++){
 			// calculate layer 2 value
 			for(int j=0; j< neulayer2 ; j++){
+				vlayer2[j]=0;
 				for(int k=0; k<= neulayer1 ; k++){
-					vlayer2[j]+=(input[i][k]*weight[0][k][j]);	
+					vlayer2[j]+=(sigmoid(input[i][k])*weight[0][k][j]);	
 				}
 				vlayer2[j]=sigmoid(vlayer2[j]);
 		//		cout<<vlayer2[j]<<" ";
@@ -110,18 +128,21 @@ ann::ann( char * train, char* test )
 		//	cout<<endl;
 			// calculate layer 3 value
 			for(int j=0; j< neulayer3 ; j++){
+				vlayer3[j]=0;
 				for(int k=0; k<= neulayer2 ; k++){
 					vlayer3[j]+=(vlayer2[k]*weight[1][k][j]);	
 				}
 				vlayer3[j]=sigmoid(vlayer3[j]);
-				error += pow((vlayer3[j]-correct[i][j]),2)/2;
+				error += pow((vlayer3[j]-sigmoid(correct[i][j])),2)/2;
+				//cout<<"vlayer3[j] "<<vlayer3[j]<<" correct "<<sigmoid(correct[i][j])<<"error "<<error<<endl;
 				// calculate delta gradient of layer3
-				deltag[1][j]=((vlayer3[j]-correct[i][j])*vlayer3[j]*(1-vlayer3[j]));
+				deltag[1][j]=((vlayer3[j]-sigmoid(correct[i][j]))*vlayer3[j]*(1-vlayer3[j]));
 			}
 			// calculate delta gradient of layer2
 			for(int j=0; j< neulayer2 ; j++){
+				deltag[0][j]=0;
 				for(int k=0; k< neulayer3 ; k++){
-					deltag[0][j]+=(vlayer3[k]*weight[1][j][k]);	
+					deltag[0][j]+=(deltag[1][k]*weight[1][j][k]);	
 				}
 				deltag[0][j]=deltag[0][j]*vlayer2[j]*(1-vlayer2[2]);
 			}
@@ -129,14 +150,14 @@ ann::ann( char * train, char* test )
 			for(int j=0; j< neulayer3 ; j++){
 				for(int k=0; k<= neulayer2 ; k++){
 					deltaw[1][k][j]= learnrate*vlayer2[k]*deltag[1][j]+ momentum*deltaw[1][k][j];	
-					weight[1][k][j]+=deltaw[1][k][j];
+					weight[1][k][j]-=deltaw[1][k][j];
 				}
 			}
 			// update layer 1 to 2 weight
 			for(int j=0; j< neulayer2 ; j++){
 				for(int k=0; k<= neulayer1 ; k++){
 					deltaw[0][k][j]= learnrate*input[i][k]*deltag[0][j]+ momentum*deltaw[0][k][j];	
-					weight[0][k][j]+=deltaw[0][k][j];
+					weight[0][k][j]-=deltaw[0][k][j];
 				}
 			}
 
@@ -145,6 +166,20 @@ ann::ann( char * train, char* test )
 		epoch++;
 	}
 	
+	for(int j=0; j<=neulayer1; j++){
+		for(int k=0; k< neulayer2; k++){
+		  cout<<weight[0][j][k]<<" ";
+		}
+		cout<<endl;
+	}
+	cout<<endl;
+	for(int j=0; j<=neulayer2; j++){
+		for(int k=0; k< neulayer3; k++){
+		  cout<<weight[1][j][k]<<" ";
+		}
+		cout<<endl;
+	}
+	cout<<endl;
 	classifier( weight, vlayer2, vlayer3, test);	
 
 	for(int i=0; i<traininstances; i++)
@@ -173,32 +208,37 @@ void ann::classifier( double *** weight , double * vlayer2, double * vlayer3, ch
 	}
 
 	double *testin=new double [neulayer1+1]; //store each instance for processing
-	testin[neulayer1]=-1;
+	testin[neulayer1]=1;
 
-	double decision=0;; 
 	for( int i=0 ; i<testinstances ; i++)
 	{
 		for (int u=0 ; u<neulayer1; u++)
 			testing>>testin[u];
 		testing>>result[i];
+		//result[i]-=1;
 		// read one instance for prediction
 		// calculate layer 2 value
 		for(int j=0; j< neulayer2 ; j++){
+			vlayer2[j]=0;
 			for(int k=0; k<= neulayer1 ; k++){
-				vlayer2[j]+=(testin[k]*weight[0][k][j]);					
+				vlayer2[j]+=(sigmoid(testin[k])*weight[0][k][j]);					
 			}
 			vlayer2[j]=sigmoid(vlayer2[j]);
 		}
 		// calculate layer 3 value
 		for(int j=0; j< neulayer3 ; j++){
+			vlayer3[j]=0;
 			for(int k=0; k<= neulayer2 ; k++){
 				vlayer3[j]+=(vlayer2[k]*weight[1][k][j]);	
 			}
 			vlayer3[j]=sigmoid(vlayer3[j]);
-			cout<<"test pattern "<<i<<" ouptut "<<vlayer3[j]<<endl;
+//			cout<<"test pattern "<<i<<" ouptut "<<vlayer3[j]<<endl;
 		}
-		decision=floor(vlayer3[0]+0.5);
-		outcome[i]=decision;
+		if( abs(vlayer3[0]-sigmoid(1)) > abs(vlayer3[0]-sigmoid(2)) ){
+			outcome[i]=2;
+		}else{
+			outcome[i]=1;
+		}
 	}
 	accuracy ( outcome , result );
 
