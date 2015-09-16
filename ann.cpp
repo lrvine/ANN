@@ -11,8 +11,15 @@ using namespace std;
 
 
 //initialize all the information we need from training data
-ann::ann( char * train, char* test )
+ann::ann( char* train , char* test , double ilearnrate , double imomentum, double imaxepoch, double imaxwinit, double itargeterror )
 {
+	learnrate=ilearnrate;
+	momentum=imomentum;
+	maxepoch=imaxepoch;
+	maxwinit=imaxwinit;
+	targeterror=itargeterror;
+
+
 	ifstream training;
         training.open(train);
         if(!training){cout<<"Can't open training data file!"<<endl;return;}
@@ -111,7 +118,6 @@ ann::ann( char * train, char* test )
 	unsigned long long int epoch=0;
 	double error = numeric_limits<double>::max();
 	cout<<"begining of epoch "<<epoch<<" error is "<<error<<" "<<neulayer3<<" "<<neulayer2<<" "<<neulayer1<<endl;
-	maxepoch=30000;
 	while( epoch < maxepoch && error > targeterror ){
 		// train each pattern for one epoch
 		error=0;
