@@ -12,29 +12,35 @@ double momentum=0;
 double maxepoch=0;
 char* train;
 char* input;
+char* cfg;
 
-if( argc >= 6 ){
-	maxepoch = atof(argv[5]);
-	momentum = atof(argv[4]);
-	learnrate = atof(argv[3]);
+if( argc >= 7 ){
+	maxepoch = atof(argv[6]);
+	momentum = atof(argv[5]);
+	learnrate = atof(argv[4]);
 	train = argv[1];
 	input = argv[2];
-  	ann a(train, input, learnrate , momentum, maxepoch);
+	cfg = argv[3];
+  	ann a(train, input, cfg, learnrate , momentum, maxepoch);
+}else if( argc >= 6 ){
+	momentum = atof(argv[5]);
+	learnrate = atof(argv[4]);
+	train = argv[1];
+	input = argv[2];
+	cfg = argv[3];
+  	ann a(train, input, cfg, learnrate , momentum);
 }else if( argc >= 5 ){
-	momentum = atof(argv[4]);
-	learnrate = atof(argv[3]);
+	learnrate = atof(argv[4]);
 	train = argv[1];
 	input = argv[2];
-  	ann a(train, input, learnrate , momentum);
-}else if( argc >= 4 ){
-	learnrate = atof(argv[3]);
+	cfg = argv[3];
+  	ann a(train, input, cfg, learnrate);
+}else if( argc == 4 ){
 	train = argv[1];
 	input = argv[2];
-  	ann a(train, input, learnrate);
-}else if( argc == 3 ){
-	train = argv[1];
-	input = argv[2];
-  	ann a(train, input);
+	cfg = argv[3];
+	cout<<"ok"<<endl;
+  	ann a(train, input, cfg);
 }else {
 	cout<<" You need to provide training data and input data for prediction. Please read README"<<endl;
 }

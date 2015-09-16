@@ -11,7 +11,7 @@ using namespace std;
 
 
 //initialize all the information we need from training data
-ann::ann( char* train , char* test , double ilearnrate , double imomentum, double imaxepoch, double imaxwinit, double itargeterror )
+ann::ann( char* train , char* test , char* configure, double ilearnrate , double imomentum, double imaxepoch, double imaxwinit, double itargeterror )
 {
 	learnrate=ilearnrate;
 	momentum=imomentum;
@@ -19,14 +19,18 @@ ann::ann( char* train , char* test , double ilearnrate , double imomentum, doubl
 	maxwinit=imaxwinit;
 	targeterror=itargeterror;
 
+	ifstream cfg;
+        cfg.open(configure);
+        if(!cfg){cout<<"Can't open configure file!"<<endl;return;}
+
+	cfg>>traininstances>>testinstances>>neulayer1>>neulayer2>>neulayer3;
+	cfg.close();
+	cout<<traininstances<<testinstances<<neulayer1<<neulayer2<<neulayer3;
 
 	ifstream training;
         training.open(train);
         if(!training){cout<<"Can't open training data file!"<<endl;return;}
     
-	training>>traininstances>>neulayer1; // read the number of training instances and attributes
-
-	training>>neulayer2>>neulayer3;
 
 	//store the whole input & bias  
 	double **input= new double *[traininstances];  
@@ -199,7 +203,6 @@ void ann::classifier( double *** weight , double * vlayer2, double * vlayer3, ch
 	ifstream testing(test);
 	if(!testing){cout<<"Can't open training data file!"<<endl;return;}
 
-	testing>>testinstances;              //read the number of testing data
 
 	int *result= new int[testinstances]; //this array store the real result for comparison
 	for(int w=0; w<testinstances; w++)
@@ -271,17 +274,10 @@ void ann::accuracy(int *outcome , int * result)
 	cout<<"accuracy is "<<percentage*100<<"%"<<endl;
 }
 
-double ann::sigmoid(double x ){
+double inline ann::sigmoid(double x ){
 
 x=exp(-x);
 x=1/(1+x);
-
-return x;
-}
-
-double ann::fsigmoid(double x ){
-
-x=x/(1+abs(x));
 
 return x;
 }
