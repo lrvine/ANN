@@ -19,6 +19,7 @@ ann::ann( char* train , char* test , char* configure, double ilearnrate , double
 	maxwinit=imaxwinit;
 	targeterror=itargeterror;
 
+	//read configuration 
 	ifstream cfg;
         cfg.open(configure);
         if(!cfg){cout<<"Can't open configure file!"<<endl;return;}
@@ -27,6 +28,7 @@ ann::ann( char* train , char* test , char* configure, double ilearnrate , double
 	cfg.close();
 	cout<<traininstances<<testinstances<<neulayer1<<neulayer2<<neulayer3;
 
+	//read training read
 	ifstream training;
         training.open(train);
         if(!training){cout<<"Can't open training data file!"<<endl;return;}
@@ -49,7 +51,6 @@ ann::ann( char* train , char* test , char* configure, double ilearnrate , double
 		}
 		for(int j=0; j<neulayer3; j++){
 			training>>correct[i][j];
-		//	correct[i][j]-=1;
 		}
 		//init bias
 		input[i][neulayer1]=1;
@@ -103,7 +104,7 @@ ann::ann( char* train , char* test , char* configure, double ilearnrate , double
 			}
 		}
 	}
-	
+	/*
 	for(int j=0; j<=neulayer1; j++){
 		for(int k=0; k< neulayer2; k++){
 		  cout<<weight[0][j][k]<<" ";
@@ -118,10 +119,9 @@ ann::ann( char* train , char* test , char* configure, double ilearnrate , double
 		cout<<endl;
 	}
 	cout<<endl;
-
+	*/
 	unsigned long long int epoch=0;
 	double error = numeric_limits<double>::max();
-	cout<<"begining of epoch "<<epoch<<" error is "<<error<<" "<<neulayer3<<" "<<neulayer2<<" "<<neulayer1<<endl;
 	while( epoch < maxepoch && error > targeterror ){
 		// train each pattern for one epoch
 		error=0;
@@ -172,29 +172,23 @@ ann::ann( char* train , char* test , char* configure, double ilearnrate , double
 			}
 
 		}
+		error=error/traininstances;
 		cout<<" end of epoch "<<epoch<<" error is "<<error<<endl;
 		epoch++;
 	}
 	
-	for(int j=0; j<=neulayer1; j++){
-		for(int k=0; k< neulayer2; k++){
-		  cout<<weight[0][j][k]<<" ";
-		}
-		cout<<endl;
-	}
-	cout<<endl;
-	for(int j=0; j<=neulayer2; j++){
-		for(int k=0; k< neulayer3; k++){
-		  cout<<weight[1][j][k]<<" ";
-		}
-		cout<<endl;
-	}
-	cout<<endl;
 	classifier( weight, vlayer2, vlayer3, test);	
 
-	for(int i=0; i<traininstances; i++)
+	for(int i=0; i<traininstances; i++){
 		delete []  input[i];
+		delete []  correct[i];
+	}
 	delete [] input;
+	delete [] correct;
+	delete vlayer2;
+	delete vlayer3;
+	for(int i=0; i<(numlayer-1); i++){
+	}
 
 
 }
@@ -250,6 +244,9 @@ void ann::classifier( double *** weight , double * vlayer2, double * vlayer3, ch
 		}
 	}
 	accuracy ( outcome , result );
+	delete result;
+	delete outcome;
+	delete testin;
 
 } 
 

@@ -1,8 +1,8 @@
 #include <iostream>
 #include <stdlib.h>
+#include "ann.h"
 
 using namespace std;
-#include "ann.h"
 
 
 int main( int argc, char** argv ){
@@ -42,7 +42,7 @@ if( argc >= 7 ){
 	cout<<"ok"<<endl;
   	ann a(train, input, cfg);
 }else {
-	cout<<" You need to provide training data and input data for prediction. Please read README"<<endl;
+	cout<<" You need to provide training data, input data, and configuration for prediction. Please read README"<<endl;
 }
 
 
