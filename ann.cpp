@@ -120,11 +120,23 @@ ann::ann( char* train , char* test , char* configure, double ilearnrate , double
 	}
 	cout<<endl;
 	*/
+
+	/*
+	// shuffle input pattern order  : This didn't seems to improve prediction rate. Comment out for now.
+	srand ( unsigned ( std::time(0) ) );
+	vector<int> ilist;
+	for(int i=0; i<traininstances ; i++){
+		ilist.push_back(i);
+	}
+	*/
 	unsigned long long int epoch=0;
 	double error = numeric_limits<double>::max();
-	while( epoch < maxepoch && error > targeterror ){
+	double perror = numeric_limits<double>::max();
+	double deltaerror = numeric_limits<double>::max();
+	while( epoch < maxepoch && deltaerror > targeterror ){
 		// train each pattern for one epoch
 		error=0;
+//		random_shuffle(ilist.begin(),ilist.end());
 		for(int i=0; i< traininstances ; i++){
 			// calculate layer 2 value
 			for(int j=0; j< neulayer2 ; j++){
@@ -173,7 +185,9 @@ ann::ann( char* train , char* test , char* configure, double ilearnrate , double
 
 		}
 		error=error/traininstances;
-		cout<<" end of epoch "<<epoch<<" error is "<<error<<endl;
+		deltaerror=abs(error-perror);
+		perror=error;
+		cout<<" end of epoch "<<epoch<<" error is "<<error<<" error delta is "<<deltaerror<<endl;
 		epoch++;
 	}
 	

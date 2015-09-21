@@ -19,6 +19,6 @@ protected:
 	void classifier( double *** , double *, double *, char* );  
 	void accuracy(int * , int * ); // claculate the accuracy
 public:
-	ann( char* train , char* test , char* configure, double learnrate=0.01 , double momentum=0.2, double maxepoch=30000, double maxwinit=0.3, double targeterror=0.0001 );
+	ann( char* train , char* test , char* configure, double learnrate=0.01 , double momentum=0.2, double maxepoch=10000, double maxwinit=0.3, double targeterror=0.000000000001 );
 };
 #endif
