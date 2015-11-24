@@ -1,6 +1,6 @@
 CC=g++
 CFLAGS= -std=c++11 -c -g -Wall
-SOURCE=main.cpp ann.cpp
+SOURCE=main.cc ann.cc
 LDFLAGS=
 OBJECTS= $(SOURCE:.cpp=.o)
 
