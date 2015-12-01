@@ -11,13 +11,14 @@ using namespace std;
 
 
 //initialize all the information we need from training data
-ann::ann( char* train , char* test , char* configure, double ilearnrate , double imomentum, double imaxepoch, double imaxwinit, double itargeterror )
+ann::ann( char* train , char* test , char* configure, double ilearnrate , double imomentum, double imaxepoch, double imaxwinit, double itargeterror, int inumlayer )
 {
 	learnrate=ilearnrate;
 	momentum=imomentum;
 	maxepoch=imaxepoch;
 	maxwinit=imaxwinit;
 	targeterror=itargeterror;
+	numlayer=inumlayer;
 
 	//read configuration 
 	ifstream cfg;
@@ -35,15 +36,32 @@ ann::ann( char* train , char* test , char* configure, double ilearnrate , double
     
 
 	//store the whole input & bias  
-	double **input= new double *[traininstances];  
-	for(int b=0; b<traininstances; b++)   
+	double **input= new (nothrow) double *[traininstances];  
+	if( input == NULL){
+		cout << "Error: memory could not be allocated";
+		return;
+	}
+	for(int b=0; b<traininstances; b++){   
 		input[b]= new double[neulayer1+1];
-
+		if( input[b] == NULL){
+			cout << "Error: memory could not be allocated";
+			return;
+		}
+	}
 
 	//store the whole correct output 
-	double **correct= new double *[traininstances];  
-	for(int b=0; b<traininstances; b++)   
+	double **correct= new (nothrow) double *[traininstances];  
+	if( correct == NULL){
+		cout << "Error: memory could not be allocated";
+		return;
+	}
+	for(int b=0; b<traininstances; b++){   
 		correct[b]= new double[neulayer3];
+		if( correct[b] == NULL){
+			cout << "Error: memory could not be allocated";
+			return;
+		}
+	}
 
 	for(int i=0; i<traininstances; i++){
 		for(int j=0; j<neulayer1; j++){
@@ -213,12 +231,20 @@ void ann::classifier( double *** weight , double * vlayer2, double * vlayer3, ch
 
 
 	int *result= new int[testinstances]; //this array store the real result for comparison
+	if( result == NULL){
+		cout << "Error: memory could not be allocated";
+		return;
+	}
 	for(int w=0; w<testinstances; w++)
 	{
 		result[w]=0;
 	}
 
 	int *outcome=new int[testinstances]; //this array store our prediciton
+	if( outcome == NULL){
+		cout << "Error: memory could not be allocated";
+		return;
+	}
 	for(int f=0; f<testinstances; f++)
 	{
 		outcome[f]=0;
