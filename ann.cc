@@ -13,6 +13,7 @@ using namespace std;
 //initialize all the information we need from training data
 ann::ann( char* train , char* test , char* configure, double ilearnrate , double imomentum, double imaxepoch, double imaxwinit, double itargeterror, int inumlayer )
 {
+	//set initial value
 	learnrate=ilearnrate;
 	momentum=imomentum;
 	maxepoch=imaxepoch;
@@ -313,8 +314,8 @@ void ann::accuracy(int *outcome , int * result)
 
 double inline ann::sigmoid(double x ){
 
-x=exp(-x);
-x=1/(1+x);
+	x=exp(-x);
+	x=1/(1+x);
 
 return x;
 }
