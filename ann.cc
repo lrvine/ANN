@@ -11,7 +11,7 @@ using namespace std;
 
 
 //initialize all the information we need from training data
-ann::ann( char* train , char* test , char* configure, double ilearnrate , double imomentum, double imaxepoch, double imaxwinit, double itargeterror, int inumlayer )
+ann::ann( char* train_file , char* configuration_file, double ilearnrate , double imomentum, double imaxepoch, double imaxwinit, double itargeterror, int inumlayer )
 {
 	//set initial value
 	learnrate=ilearnrate;
@@ -21,23 +21,140 @@ ann::ann( char* train , char* test , char* configure, double ilearnrate , double
 	targeterror=itargeterror;
 	numlayer=inumlayer;
 
+	//read configuration
+	readConfiguration(configuration_file);
+
+	//read training data
+	storeTrainingData(train_file);
+	
+	//allocate memory for neulayer2
+	vlayer2 = new double[neulayer2+1];
+
+	//init bais
+	vlayer2[neulayer2]=1;
+
+	//allocate memory for neulayer3
+	vlayer3 = new double[neulayer3];
+
+	//allocate memory and initialize neural layer parameters
+	initNetworkParameter();		
+//	printNetworkParameter();
+	optimizeNetworkParameter();
+//	printNetworkParameter();
+}
+
+ann::~ann()
+{
+	for(int i=0; i<traininstances; i++){
+		delete []  input[i];
+		delete []  correct[i];
+	}
+	delete [] input;
+	delete [] correct;
+	delete vlayer2;
+	delete vlayer3;
+	for(int i=0; i<(numlayer-1); i++){
+	}
+}
+
+void ann::doClassify( char * test_file)
+{
+
+	ifstream testing(test_file);
+	if(!testing){cout<<"Can't open test data file!"<<endl;return;}
+
+	// prepare memeory space for prediciton
+	int *realResult= new int[testinstances]; //this array store the real result for comparison
+	if( realResult == NULL){
+		cout << "Error: memory could not be allocated";
+		return;
+	}
+	for(int w=0; w<testinstances; w++)
+	{
+		realResult[w]=0;
+	}
+
+	int *outcome=new int[testinstances]; //this array store our prediciton
+	if( outcome == NULL){
+		cout << "Error: memory could not be allocated";
+		return;
+	}
+	for(int f=0; f<testinstances; f++)
+	{
+		outcome[f]=0;
+	}
+
+	double *testin=new double [neulayer1+1]; //this array store each instance for processing
+	testin[neulayer1]=1;
+
+	// now process each test instance
+	for( int i=0 ; i<testinstances ; i++)
+	{
+		// read one instance for prediction
+		for (int u=0 ; u<neulayer1; u++)
+			testing>>testin[u];
+		testing>>realResult[i];
+
+		outcome[i]= doOnePrediction(testin);
+	}
+
+	// calculate oeverall accuracy of our prediction
+	calculateAccuracy ( outcome , realResult );
+
+	delete realResult;
+	delete outcome;
+	delete testin;
+
+} 
+
+int ann::doOnePrediction( double * testin )
+{
+	// calculate layer 2 value
+	for(int j=0; j< neulayer2 ; j++){
+		vlayer2[j]=0;
+		for(int k=0; k<= neulayer1 ; k++){
+			vlayer2[j]+=(sigmoid(testin[k])*weight[0][k][j]);					
+		}
+		vlayer2[j]=sigmoid(vlayer2[j]);
+	}
+
+	// calculate layer 3 value
+	for(int j=0; j< neulayer3 ; j++){
+		vlayer3[j]=0;
+		for(int k=0; k<= neulayer2 ; k++){
+			vlayer3[j]+=(vlayer2[k]*weight[1][k][j]);	
+		}
+		vlayer3[j]=sigmoid(vlayer3[j]);
+	//	cout<<"test pattern "<<i<<" ouptut "<<vlayer3[j]<<endl;
+	}
+	if( abs(vlayer3[0]-sigmoid(1)) > abs(vlayer3[0]-sigmoid(2)) ){
+		return 2;
+	}else{
+		return 1;
+	}
+}
+
+void ann::readConfiguration( char* configuration_file )
+{
 	//read configuration 
 	ifstream cfg;
-        cfg.open(configure);
+        cfg.open(configuration_file);
         if(!cfg){cout<<"Can't open configure file!"<<endl;return;}
 
 	cfg>>traininstances>>testinstances>>neulayer1>>neulayer2>>neulayer3;
 	cfg.close();
-	cout<<traininstances<<testinstances<<neulayer1<<neulayer2<<neulayer3;
+	//cout<<traininstances<<testinstances<<neulayer1<<neulayer2<<neulayer3;
+}
 
-	//read training read
+void ann::storeTrainingData( char * train_file )
+{
 	ifstream training;
-        training.open(train);
+        training.open(train_file);
         if(!training){cout<<"Can't open training data file!"<<endl;return;}
     
 
-	//store the whole input & bias  
-	double **input= new (nothrow) double *[traininstances];  
+	//allocate memory for input data 
+	input= new (nothrow) double *[traininstances];  
 	if( input == NULL){
 		cout << "Error: memory could not be allocated";
 		return;
@@ -50,8 +167,8 @@ ann::ann( char* train , char* test , char* configure, double ilearnrate , double
 		}
 	}
 
-	//store the whole correct output 
-	double **correct= new (nothrow) double *[traininstances];  
+	//allocate memory for correct output 
+	correct= new (nothrow) double *[traininstances];  
 	if( correct == NULL){
 		cout << "Error: memory could not be allocated";
 		return;
@@ -64,6 +181,7 @@ ann::ann( char* train , char* test , char* configure, double ilearnrate , double
 		}
 	}
 
+	// store input data and correct output
 	for(int i=0; i<traininstances; i++){
 		for(int j=0; j<neulayer1; j++){
 			training>>input[i][j];
@@ -74,21 +192,18 @@ ann::ann( char* train , char* test , char* configure, double ilearnrate , double
 		//init bias
 		input[i][neulayer1]=1;
 	}
-	//store value of neulayer2
-	double * vlayer2 = new double[neulayer2+1];
-	//init bais
-	vlayer2[neulayer2]=1;
-	//store value of neulayer3
-	double * vlayer3 = new double[neulayer3];
 
+}
 
+void ann::initNetworkParameter()
+{
 	random_device rd;
 	mt19937 mt(rd());
 	uniform_real_distribution<double> dist(0, 1);
 
-	double ***weight = new double **[numlayer-1];
-	double ***deltaw = new double **[numlayer-1];
-	double **deltag = new double *[numlayer-1];
+	weight = new double **[numlayer-1];
+	deltaw = new double **[numlayer-1];
+	deltag = new double *[numlayer-1];
 	for(int i=0; i<(numlayer-1); i++){
 		if(i==0){
 			weight[i] = new double *[neulayer1+1];
@@ -123,7 +238,10 @@ ann::ann( char* train , char* test , char* configure, double ilearnrate , double
 			}
 		}
 	}
-	/*
+}
+
+void ann::printNetworkParameter()
+{
 	for(int j=0; j<=neulayer1; j++){
 		for(int k=0; k< neulayer2; k++){
 		  cout<<weight[0][j][k]<<" ";
@@ -138,8 +256,10 @@ ann::ann( char* train , char* test , char* configure, double ilearnrate , double
 		cout<<endl;
 	}
 	cout<<endl;
-	*/
+}
 
+void ann::optimizeNetworkParameter()
+{	
 	/*
 	// shuffle input pattern order  : This didn't seems to improve prediction rate. Comment out for now.
 	srand ( unsigned ( std::time(0) ) );
@@ -209,91 +329,11 @@ ann::ann( char* train , char* test , char* configure, double ilearnrate , double
 		cout<<" end of epoch "<<epoch<<" error is "<<error<<" error delta is "<<deltaerror<<endl;
 		epoch++;
 	}
-	
-	classifier( weight, vlayer2, vlayer3, test);	
-
-	for(int i=0; i<traininstances; i++){
-		delete []  input[i];
-		delete []  correct[i];
-	}
-	delete [] input;
-	delete [] correct;
-	delete vlayer2;
-	delete vlayer3;
-	for(int i=0; i<(numlayer-1); i++){
-	}
-
 
 }
-void ann::classifier( double *** weight , double * vlayer2, double * vlayer3, char * test){
 
-	ifstream testing(test);
-	if(!testing){cout<<"Can't open training data file!"<<endl;return;}
-
-
-	int *result= new int[testinstances]; //this array store the real result for comparison
-	if( result == NULL){
-		cout << "Error: memory could not be allocated";
-		return;
-	}
-	for(int w=0; w<testinstances; w++)
-	{
-		result[w]=0;
-	}
-
-	int *outcome=new int[testinstances]; //this array store our prediciton
-	if( outcome == NULL){
-		cout << "Error: memory could not be allocated";
-		return;
-	}
-	for(int f=0; f<testinstances; f++)
-	{
-		outcome[f]=0;
-	}
-
-	double *testin=new double [neulayer1+1]; //store each instance for processing
-	testin[neulayer1]=1;
-
-	for( int i=0 ; i<testinstances ; i++)
-	{
-		for (int u=0 ; u<neulayer1; u++)
-			testing>>testin[u];
-		testing>>result[i];
-		//result[i]-=1;
-		// read one instance for prediction
-		// calculate layer 2 value
-		for(int j=0; j< neulayer2 ; j++){
-			vlayer2[j]=0;
-			for(int k=0; k<= neulayer1 ; k++){
-				vlayer2[j]+=(sigmoid(testin[k])*weight[0][k][j]);					
-			}
-			vlayer2[j]=sigmoid(vlayer2[j]);
-		}
-		// calculate layer 3 value
-		for(int j=0; j< neulayer3 ; j++){
-			vlayer3[j]=0;
-			for(int k=0; k<= neulayer2 ; k++){
-				vlayer3[j]+=(vlayer2[k]*weight[1][k][j]);	
-			}
-			vlayer3[j]=sigmoid(vlayer3[j]);
-//			cout<<"test pattern "<<i<<" ouptut "<<vlayer3[j]<<endl;
-		}
-		if( abs(vlayer3[0]-sigmoid(1)) > abs(vlayer3[0]-sigmoid(2)) ){
-			outcome[i]=2;
-		}else{
-			outcome[i]=1;
-		}
-	}
-	accuracy ( outcome , result );
-	delete result;
-	delete outcome;
-	delete testin;
-
-} 
-
-void ann::accuracy(int *outcome , int * result)
+void ann::calculateAccuracy(int *outcome , int * result)
 {
-
 
 	double correct=0;// store the number of correct predictions
 
@@ -301,7 +341,6 @@ void ann::accuracy(int *outcome , int * result)
 	{
 		if (outcome[i]==result[i])
 			correct++;
-
 		cout<<"predict to be "<<outcome[i]<<" is actually "<<result[i]<<endl;
 	}
 	
@@ -312,10 +351,9 @@ void ann::accuracy(int *outcome , int * result)
 	cout<<"accuracy is "<<percentage*100<<"%"<<endl;
 }
 
-double inline ann::sigmoid(double x ){
-
+double inline ann::sigmoid(double x )
+{
 	x=exp(-x);
 	x=1/(1+x);
-
-return x;
+	return x;
 }

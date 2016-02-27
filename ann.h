@@ -14,11 +14,26 @@ protected:
 	double momentum;
 	double maxwinit;
 	unsigned long long int maxepoch;
-	double sigmoid(double);
+	double * vlayer2;
+	double * vlayer3;
+	double ** input;
+	double ***weight; 
+	double ***deltaw;
+	double **deltag;
+	double ** correct;
+
 	//calculate the probability of each choice and choose the greatest one as our prediction
-	void classifier( double *** , double *, double *, char* );  
-	void accuracy(int * , int * ); // claculate the accuracy
+	int doOnePrediction( double *);
+	void readConfiguration( char *); // read configuration file
+	void storeTrainingData( char*); // store training data
+	void initNetworkParameter(); 
+	void printNetworkParameter();// print out network parameter for debug
+	void optimizeNetworkParameter();// optimize the network parameter via training data
+	void calculateAccuracy(int * , int * ); // claculate the accuracy
+	double sigmoid(double);
 public:
-	ann( char* train , char* test , char* configure, double learnrate=0.01 , double momentum=0.2, double maxepoch=10000, double maxwinit=0.3, double targeterror=0.000000000001, int numlayer=3 );
+	ann( char* train_file , char* configuration_file, double learnrate=0.01 , double momentum=0.2, double maxepoch=5000, double maxwinit=0.3, double targeterror=0.000000000001, int numlayer=3 );
+	~ann();
+	void doClassify( char* );
 };
 #endif

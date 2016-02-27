@@ -14,37 +14,34 @@ char* train;
 char* input;
 char* cfg;
 
+if( argc < 4 ){
+	cout<<" You need to provide training data, input data, and configuration for prediction. Please read README"<<endl;
+	return -1;
+}else{
+	train = argv[1];
+	input = argv[2];
+	cfg = argv[3];
+}
+
 if( argc >= 7 ){
 	maxepoch = atof(argv[6]);
 	momentum = atof(argv[5]);
 	learnrate = atof(argv[4]);
-	train = argv[1];
-	input = argv[2];
-	cfg = argv[3];
-  	ann a(train, input, cfg, learnrate , momentum, maxepoch);
-}else if( argc >= 6 ){
+  	ann a(train, cfg, learnrate , momentum, maxepoch);
+	a.doClassify(input);
+}else if( argc == 6 ){
 	momentum = atof(argv[5]);
 	learnrate = atof(argv[4]);
-	train = argv[1];
-	input = argv[2];
-	cfg = argv[3];
-  	ann a(train, input, cfg, learnrate , momentum);
-}else if( argc >= 5 ){
+  	ann a(train, cfg, learnrate , momentum);
+	a.doClassify(input);
+}else if( argc == 5 ){
 	learnrate = atof(argv[4]);
-	train = argv[1];
-	input = argv[2];
-	cfg = argv[3];
-  	ann a(train, input, cfg, learnrate);
+  	ann a(train, cfg, learnrate);
+	a.doClassify(input);
 }else if( argc == 4 ){
-	train = argv[1];
-	input = argv[2];
-	cfg = argv[3];
-	cout<<"ok"<<endl;
-  	ann a(train, input, cfg);
-}else {
-	cout<<" You need to provide training data, input data, and configuration for prediction. Please read README"<<endl;
+  	ann a(train, cfg);
+	a.doClassify(input);
 }
-
 
 return 0;
 }
