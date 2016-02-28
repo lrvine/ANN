@@ -3,36 +3,42 @@
 class ann
 {
 protected:
-	int traininstances;  //store the number of training instances
-	int testinstances;   //store the number of testing instances
-	int neulayer1;
-	int neulayer2;
-	int neulayer3;
-	int numlayer;
-	double targeterror;
-	double learnrate;
-	double momentum;
-	double maxwinit;
-	unsigned long long int maxepoch;
-	double * vlayer2;
-	double * vlayer3;
-	double ** input;
-	double ***weight; 
-	double ***deltaw;
-	double **deltag;
-	double ** correct;
+	int numberTrainInstances;  //store the number of training instances
+	int numberTestInstances;   //store the number of testing instances
+	double ** inputTrainInstances; //store the whole input of training instances
+	double ** outputTrainInstances; //store the whole output of training instances
 
-	//calculate the probability of each choice and choose the greatest one as our prediction
-	int doOnePrediction( double *);
-	void readConfiguration( char *); // read configuration file
-	void storeTrainingData( char*); // store training data
-	void initNetworkParameter(); 
+	// Neural Network structure
+	int numberNeuronLayer1;
+	int numberNeuronLayer2;
+	int numberNeuronLayer3;
+	int numberLayer;
+
+	// Neural Network parameters
+	double * valueLayer2;
+	double * valueLayer3;
+	double *** weightOfNetwork; 
+	double *** weightDeltaOfNetwork;
+	double ** deltaGradientOfNetwork;
+
+	// Neural Netowrk attributes
+	double targetError;
+	double learnRate;
+	double momentum;
+	double maxWeightForInit;
+	unsigned long long int maxEpoch;
+
+	void readConfiguration( char * ); // read configuration file
+	void storeTrainingData( char* ); // store training data
+	void releaseTrainingData(); // store training data
+	void initNetworkParameter(); // initialize the netowrk 
 	void printNetworkParameter();// print out network parameter for debug
 	void optimizeNetworkParameter();// optimize the network parameter via training data
-	void calculateAccuracy(int * , int * ); // claculate the accuracy
+	int doOnePrediction( double * ); //calculate the probability of each choice and choose the greatest one as our prediction
+	void calculateAccuracy( int * , int * ); // claculate the accuracy
 	double sigmoid(double);
 public:
-	ann( char* train_file , char* configuration_file, double learnrate=0.01 , double momentum=0.2, double maxepoch=5000, double maxwinit=0.3, double targeterror=0.000000000001, int numlayer=3 );
+	ann( char* train_file , char* configuration_file, double learnRate=0.01 , double momentum=0.2, double maxEpoch=5000, double maxWeightForInit=0.3, double targetError=0.000000000001, int numberLayer=3 );
 	~ann();
 	void doClassify( char* );
 };

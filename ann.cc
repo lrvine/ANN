@@ -11,15 +11,15 @@ using namespace std;
 
 
 //initialize all the information we need from training data
-ann::ann( char* train_file , char* configuration_file, double ilearnrate , double imomentum, double imaxepoch, double imaxwinit, double itargeterror, int inumlayer )
+ann::ann( char* train_file , char* configuration_file, double ilearnRate , double imomentum, double imaxEpoch, double imaxWeightForInit, double itargetError, int inumberLayer )
 {
 	//set initial value
-	learnrate=ilearnrate;
+	learnRate=ilearnRate;
 	momentum=imomentum;
-	maxepoch=imaxepoch;
-	maxwinit=imaxwinit;
-	targeterror=itargeterror;
-	numlayer=inumlayer;
+	maxEpoch=imaxEpoch;
+	maxWeightForInit=imaxWeightForInit;
+	targetError=itargetError;
+	numberLayer=inumberLayer;
 
 	//read configuration
 	readConfiguration(configuration_file);
@@ -27,112 +27,42 @@ ann::ann( char* train_file , char* configuration_file, double ilearnrate , doubl
 	//read training data
 	storeTrainingData(train_file);
 	
-	//allocate memory for neulayer2
-	vlayer2 = new double[neulayer2+1];
+	//allocate memory for numberNeuronLayer2
+	valueLayer2 = new double[numberNeuronLayer2+1];
 
 	//init bais
-	vlayer2[neulayer2]=1;
+	valueLayer2[numberNeuronLayer2]=1;
 
-	//allocate memory for neulayer3
-	vlayer3 = new double[neulayer3];
+	//allocate memory for numberNeuronLayer3
+	valueLayer3 = new double[numberNeuronLayer3];
 
 	//allocate memory and initialize neural layer parameters
 	initNetworkParameter();		
 //	printNetworkParameter();
 	optimizeNetworkParameter();
+	releaseTrainingData();
 //	printNetworkParameter();
 }
 
 ann::~ann()
 {
-	for(int i=0; i<traininstances; i++){
-		delete []  input[i];
-		delete []  correct[i];
+	delete [] valueLayer2;
+	delete [] valueLayer3;
+
+	for(int i=0; i<(numberLayer-1); i++){
+		for(int j=0; j<= numberNeuronLayer1; j++){
+			delete [] weightOfNetwork[i][j];
+			delete [] weightDeltaOfNetwork[i][j];
+		}
+		delete [] weightOfNetwork[i];
+		delete [] weightDeltaOfNetwork[i];
+		delete [] deltaGradientOfNetwork[i];
 	}
-	delete [] input;
-	delete [] correct;
-	delete vlayer2;
-	delete vlayer3;
-	for(int i=0; i<(numlayer-1); i++){
-	}
+	delete [] weightOfNetwork;
+	delete [] weightDeltaOfNetwork;
+	delete [] deltaGradientOfNetwork;
 }
 
-void ann::doClassify( char * test_file)
-{
-
-	ifstream testing(test_file);
-	if(!testing){cout<<"Can't open test data file!"<<endl;return;}
-
-	// prepare memeory space for prediciton
-	int *realResult= new int[testinstances]; //this array store the real result for comparison
-	if( realResult == NULL){
-		cout << "Error: memory could not be allocated";
-		return;
-	}
-	for(int w=0; w<testinstances; w++)
-	{
-		realResult[w]=0;
-	}
-
-	int *outcome=new int[testinstances]; //this array store our prediciton
-	if( outcome == NULL){
-		cout << "Error: memory could not be allocated";
-		return;
-	}
-	for(int f=0; f<testinstances; f++)
-	{
-		outcome[f]=0;
-	}
-
-	double *testin=new double [neulayer1+1]; //this array store each instance for processing
-	testin[neulayer1]=1;
-
-	// now process each test instance
-	for( int i=0 ; i<testinstances ; i++)
-	{
-		// read one instance for prediction
-		for (int u=0 ; u<neulayer1; u++)
-			testing>>testin[u];
-		testing>>realResult[i];
-
-		outcome[i]= doOnePrediction(testin);
-	}
-
-	// calculate oeverall accuracy of our prediction
-	calculateAccuracy ( outcome , realResult );
-
-	delete realResult;
-	delete outcome;
-	delete testin;
-
-} 
-
-int ann::doOnePrediction( double * testin )
-{
-	// calculate layer 2 value
-	for(int j=0; j< neulayer2 ; j++){
-		vlayer2[j]=0;
-		for(int k=0; k<= neulayer1 ; k++){
-			vlayer2[j]+=(sigmoid(testin[k])*weight[0][k][j]);					
-		}
-		vlayer2[j]=sigmoid(vlayer2[j]);
-	}
-
-	// calculate layer 3 value
-	for(int j=0; j< neulayer3 ; j++){
-		vlayer3[j]=0;
-		for(int k=0; k<= neulayer2 ; k++){
-			vlayer3[j]+=(vlayer2[k]*weight[1][k][j]);	
-		}
-		vlayer3[j]=sigmoid(vlayer3[j]);
-	//	cout<<"test pattern "<<i<<" ouptut "<<vlayer3[j]<<endl;
-	}
-	if( abs(vlayer3[0]-sigmoid(1)) > abs(vlayer3[0]-sigmoid(2)) ){
-		return 2;
-	}else{
-		return 1;
-	}
-}
 
 void ann::readConfiguration( char* configuration_file )
 {
@@ -141,9 +71,9 @@ void ann::readConfiguration( char* configuration_file )
         cfg.open(configuration_file);
         if(!cfg){cout<<"Can't open configure file!"<<endl;return;}
 
-	cfg>>traininstances>>testinstances>>neulayer1>>neulayer2>>neulayer3;
+	cfg>>numberTrainInstances>>numberTestInstances>>numberNeuronLayer1>>numberNeuronLayer2>>numberNeuronLayer3;
 	cfg.close();
-	//cout<<traininstances<<testinstances<<neulayer1<<neulayer2<<neulayer3;
+	//cout<<numberTrainInstances<<numberTestInstances<<numberNeuronLayer1<<numberNeuronLayer2<<numberNeuronLayer3;
 }
 
 void ann::storeTrainingData( char * train_file )
@@ -153,46 +83,56 @@ void ann::storeTrainingData( char * train_file )
         if(!training){cout<<"Can't open training data file!"<<endl;return;}
     
 
-	//allocate memory for input data 
-	input= new (nothrow) double *[traininstances];  
-	if( input == NULL){
+	//allocate memory for inputTrainInstances data 
+	inputTrainInstances= new (nothrow) double *[numberTrainInstances];  
+	if( inputTrainInstances == NULL){
 		cout << "Error: memory could not be allocated";
 		return;
 	}
-	for(int b=0; b<traininstances; b++){   
-		input[b]= new double[neulayer1+1];
-		if( input[b] == NULL){
+	for(int b=0; b<numberTrainInstances; b++){   
+		inputTrainInstances[b]= new double[numberNeuronLayer1+1];
+		if( inputTrainInstances[b] == NULL){
 			cout << "Error: memory could not be allocated";
 			return;
 		}
 	}
 
-	//allocate memory for correct output 
-	correct= new (nothrow) double *[traininstances];  
-	if( correct == NULL){
+	//allocate memory for outputTrainInstances output 
+	outputTrainInstances= new (nothrow) double *[numberTrainInstances];  
+	if( outputTrainInstances == NULL){
 		cout << "Error: memory could not be allocated";
 		return;
 	}
-	for(int b=0; b<traininstances; b++){   
-		correct[b]= new double[neulayer3];
-		if( correct[b] == NULL){
+	for(int b=0; b<numberTrainInstances; b++){   
+		outputTrainInstances[b]= new double[numberNeuronLayer3];
+		if( outputTrainInstances[b] == NULL){
 			cout << "Error: memory could not be allocated";
 			return;
 		}
 	}
 
-	// store input data and correct output
-	for(int i=0; i<traininstances; i++){
-		for(int j=0; j<neulayer1; j++){
-			training>>input[i][j];
+	// store inputTrainInstances data and outputTrainInstances output
+	for(int i=0; i<numberTrainInstances; i++){
+		for(int j=0; j<numberNeuronLayer1; j++){
+			training>>inputTrainInstances[i][j];
 		}
-		for(int j=0; j<neulayer3; j++){
-			training>>correct[i][j];
+		for(int j=0; j<numberNeuronLayer3; j++){
+			training>>outputTrainInstances[i][j];
 		}
 		//init bias
-		input[i][neulayer1]=1;
+		inputTrainInstances[i][numberNeuronLayer1]=1;
 	}
 
+}
+
+void ann::releaseTrainingData()
+{
+	for(int i=0; i<numberTrainInstances; i++){
+		delete []  inputTrainInstances[i];
+		delete []  outputTrainInstances[i];
+	}
+	delete [] inputTrainInstances;
+	delete [] outputTrainInstances;
 }
 
 void ann::initNetworkParameter()
@@ -201,39 +141,39 @@ void ann::initNetworkParameter()
 	mt19937 mt(rd());
 	uniform_real_distribution<double> dist(0, 1);
 
-	weight = new double **[numlayer-1];
-	deltaw = new double **[numlayer-1];
-	deltag = new double *[numlayer-1];
-	for(int i=0; i<(numlayer-1); i++){
+	weightOfNetwork = new double **[numberLayer-1];
+	weightDeltaOfNetwork = new double **[numberLayer-1];
+	deltaGradientOfNetwork = new double *[numberLayer-1];
+	for(int i=0; i<(numberLayer-1); i++){
 		if(i==0){
-			weight[i] = new double *[neulayer1+1];
-			deltaw[i] = new double *[neulayer1+1];
-			deltag[i] = new double[neulayer2];
-			for(int j=0; j<neulayer2; j++){
-				deltag[i][j]=0;
+			weightOfNetwork[i] = new double *[numberNeuronLayer1+1];
+			weightDeltaOfNetwork[i] = new double *[numberNeuronLayer1+1];
+			deltaGradientOfNetwork[i] = new double[numberNeuronLayer2];
+			for(int j=0; j<numberNeuronLayer2; j++){
+				deltaGradientOfNetwork[i][j]=0;
 			}
-			for(int j=0; j<=neulayer1; j++){
-				weight[i][j] = new double [neulayer2+1];
-				deltaw[i][j] = new double [neulayer2+1];
-				for(int k=0; k<neulayer2; k++){
-					weight[i][j][k]=( 2*(dist(mt)-0.5)*maxwinit );
-					deltaw[i][j][k]=0;
+			for(int j=0; j<=numberNeuronLayer1; j++){
+				weightOfNetwork[i][j] = new double [numberNeuronLayer2+1];
+				weightDeltaOfNetwork[i][j] = new double [numberNeuronLayer2+1];
+				for(int k=0; k<numberNeuronLayer2; k++){
+					weightOfNetwork[i][j][k]=( 2*(dist(mt)-0.5)*maxWeightForInit );
+					weightDeltaOfNetwork[i][j][k]=0;
 				}
 			}
 		}
 		if(i==1){
-			weight[i] = new double *[neulayer2+1];
-			deltaw[i] = new double *[neulayer2+1];
-			deltag[i] = new double [neulayer3];
-			for(int j=0; j<neulayer3; j++){
-				deltag[i][j]=0;
+			weightOfNetwork[i] = new double *[numberNeuronLayer2+1];
+			weightDeltaOfNetwork[i] = new double *[numberNeuronLayer2+1];
+			deltaGradientOfNetwork[i] = new double [numberNeuronLayer3];
+			for(int j=0; j<numberNeuronLayer3; j++){
+				deltaGradientOfNetwork[i][j]=0;
 			}
-			for(int j=0; j<=neulayer2; j++){
-				weight[i][j] = new double [neulayer3];
-				deltaw[i][j] = new double [neulayer3];
-				for(int k=0; k<neulayer3; k++){
-					weight[i][j][k]=( 2*(dist(mt)-0.5)*maxwinit );
-					deltaw[i][j][k]=0;
+			for(int j=0; j<=numberNeuronLayer2; j++){
+				weightOfNetwork[i][j] = new double [numberNeuronLayer3];
+				weightDeltaOfNetwork[i][j] = new double [numberNeuronLayer3];
+				for(int k=0; k<numberNeuronLayer3; k++){
+					weightOfNetwork[i][j][k]=( 2*(dist(mt)-0.5)*maxWeightForInit );
+					weightDeltaOfNetwork[i][j][k]=0;
 				}
 			}
 		}
@@ -242,16 +182,16 @@ void ann::initNetworkParameter()
 
 void ann::printNetworkParameter()
 {
-	for(int j=0; j<=neulayer1; j++){
-		for(int k=0; k< neulayer2; k++){
-		  cout<<weight[0][j][k]<<" ";
+	for(int j=0; j<=numberNeuronLayer1; j++){
+		for(int k=0; k< numberNeuronLayer2; k++){
+		  cout<<weightOfNetwork[0][j][k]<<" ";
 		}
 		cout<<endl;
 	}
 	cout<<endl;
-	for(int j=0; j<=neulayer2; j++){
-		for(int k=0; k< neulayer3; k++){
-		  cout<<weight[1][j][k]<<" ";
+	for(int j=0; j<=numberNeuronLayer2; j++){
+		for(int k=0; k< numberNeuronLayer3; k++){
+		  cout<<weightOfNetwork[1][j][k]<<" ";
 		}
 		cout<<endl;
 	}
@@ -261,10 +201,10 @@ void ann::printNetworkParameter()
 void ann::optimizeNetworkParameter()
 {	
 	/*
-	// shuffle input pattern order  : This didn't seems to improve prediction rate. Comment out for now.
+	// shuffle inputTrainInstances pattern order  : This didn't seems to improve prediction rate. Comment out for now.
 	srand ( unsigned ( std::time(0) ) );
 	vector<int> ilist;
-	for(int i=0; i<traininstances ; i++){
+	for(int i=0; i<numberTrainInstances ; i++){
 		ilist.push_back(i);
 	}
 	*/
@@ -272,58 +212,58 @@ void ann::optimizeNetworkParameter()
 	double error = numeric_limits<double>::max();
 	double perror = numeric_limits<double>::max();
 	double deltaerror = numeric_limits<double>::max();
-	while( epoch < maxepoch && deltaerror > targeterror ){
+	while( epoch < maxEpoch && deltaerror > targetError ){
 		// train each pattern for one epoch
 		error=0;
 //		random_shuffle(ilist.begin(),ilist.end());
-		for(int i=0; i< traininstances ; i++){
+		for(int i=0; i< numberTrainInstances ; i++){
 			// calculate layer 2 value
-			for(int j=0; j< neulayer2 ; j++){
-				vlayer2[j]=0;
-				for(int k=0; k<= neulayer1 ; k++){
-					vlayer2[j]+=(sigmoid(input[i][k])*weight[0][k][j]);	
+			for(int j=0; j< numberNeuronLayer2 ; j++){
+				valueLayer2[j]=0;
+				for(int k=0; k<= numberNeuronLayer1 ; k++){
+					valueLayer2[j]+=(sigmoid(inputTrainInstances[i][k])*weightOfNetwork[0][k][j]);	
 				}
-				vlayer2[j]=sigmoid(vlayer2[j]);
-		//		cout<<vlayer2[j]<<" ";
+				valueLayer2[j]=sigmoid(valueLayer2[j]);
+		//		cout<<valueLayer2[j]<<" ";
 			}
 		//	cout<<endl;
 			// calculate layer 3 value
-			for(int j=0; j< neulayer3 ; j++){
-				vlayer3[j]=0;
-				for(int k=0; k<= neulayer2 ; k++){
-					vlayer3[j]+=(vlayer2[k]*weight[1][k][j]);	
+			for(int j=0; j< numberNeuronLayer3 ; j++){
+				valueLayer3[j]=0;
+				for(int k=0; k<= numberNeuronLayer2 ; k++){
+					valueLayer3[j]+=(valueLayer2[k]*weightOfNetwork[1][k][j]);	
 				}
-				vlayer3[j]=sigmoid(vlayer3[j]);
-				error += pow((vlayer3[j]-sigmoid(correct[i][j])),2)/2;
-				//cout<<"vlayer3[j] "<<vlayer3[j]<<" correct "<<sigmoid(correct[i][j])<<"error "<<error<<endl;
+				valueLayer3[j]=sigmoid(valueLayer3[j]);
+				error += pow((valueLayer3[j]-sigmoid(outputTrainInstances[i][j])),2)/2;
+				//cout<<"valueLayer3[j] "<<valueLayer3[j]<<" outputTrainInstances "<<sigmoid(outputTrainInstances[i][j])<<"error "<<error<<endl;
 				// calculate delta gradient of layer3
-				deltag[1][j]=((vlayer3[j]-sigmoid(correct[i][j]))*vlayer3[j]*(1-vlayer3[j]));
+				deltaGradientOfNetwork[1][j]=((valueLayer3[j]-sigmoid(outputTrainInstances[i][j]))*valueLayer3[j]*(1-valueLayer3[j]));
 			}
 			// calculate delta gradient of layer2
-			for(int j=0; j< neulayer2 ; j++){
-				deltag[0][j]=0;
-				for(int k=0; k< neulayer3 ; k++){
-					deltag[0][j]+=(deltag[1][k]*weight[1][j][k]);	
+			for(int j=0; j< numberNeuronLayer2 ; j++){
+				deltaGradientOfNetwork[0][j]=0;
+				for(int k=0; k< numberNeuronLayer3 ; k++){
+					deltaGradientOfNetwork[0][j]+=(deltaGradientOfNetwork[1][k]*weightOfNetwork[1][j][k]);	
 				}
-				deltag[0][j]=deltag[0][j]*vlayer2[j]*(1-vlayer2[2]);
+				deltaGradientOfNetwork[0][j]=deltaGradientOfNetwork[0][j]*valueLayer2[j]*(1-valueLayer2[2]);
 			}
-			// update layer 2 to 3 weight
-			for(int j=0; j< neulayer3 ; j++){
-				for(int k=0; k<= neulayer2 ; k++){
-					deltaw[1][k][j]= learnrate*vlayer2[k]*deltag[1][j]+ momentum*deltaw[1][k][j];	
-					weight[1][k][j]-=deltaw[1][k][j];
+			// update layer 2 to 3 weightOfNetwork
+			for(int j=0; j< numberNeuronLayer3 ; j++){
+				for(int k=0; k<= numberNeuronLayer2 ; k++){
+					weightDeltaOfNetwork[1][k][j]= learnRate*valueLayer2[k]*deltaGradientOfNetwork[1][j]+ momentum*weightDeltaOfNetwork[1][k][j];	
+					weightOfNetwork[1][k][j]-=weightDeltaOfNetwork[1][k][j];
 				}
 			}
-			// update layer 1 to 2 weight
-			for(int j=0; j< neulayer2 ; j++){
-				for(int k=0; k<= neulayer1 ; k++){
-					deltaw[0][k][j]= learnrate*input[i][k]*deltag[0][j]+ momentum*deltaw[0][k][j];	
-					weight[0][k][j]-=deltaw[0][k][j];
+			// update layer 1 to 2 weightOfNetwork
+			for(int j=0; j< numberNeuronLayer2 ; j++){
+				for(int k=0; k<= numberNeuronLayer1 ; k++){
+					weightDeltaOfNetwork[0][k][j]= learnRate*inputTrainInstances[i][k]*deltaGradientOfNetwork[0][j]+ momentum*weightDeltaOfNetwork[0][k][j];	
+					weightOfNetwork[0][k][j]-=weightDeltaOfNetwork[0][k][j];
 				}
 			}
 
 		}
-		error=error/traininstances;
+		error=error/numberTrainInstances;
 		deltaerror=abs(error-perror);
 		perror=error;
 		cout<<" end of epoch "<<epoch<<" error is "<<error<<" error delta is "<<deltaerror<<endl;
@@ -332,21 +272,98 @@ void ann::optimizeNetworkParameter()
 
 }
 
-void ann::calculateAccuracy(int *outcome , int * result)
+void ann::doClassify( char * test_file)
 {
 
-	double correct=0;// store the number of correct predictions
+	ifstream testInputg(test_file);
+	if(!testInputg){cout<<"Can't open test data file!"<<endl;return;}
 
-	for( int i=0 ; i<testinstances; i++)//count the number of correct predictions 
+	// prepare memeory space for prediciton
+	int *realResult= new int[numberTestInstances]; //this array store the real result for comparison
+	if( realResult == NULL){
+		cout << "Error: memory could not be allocated";
+		return;
+	}
+	for(int w=0; w<numberTestInstances; w++)
 	{
-		if (outcome[i]==result[i])
-			correct++;
-		cout<<"predict to be "<<outcome[i]<<" is actually "<<result[i]<<endl;
+		realResult[w]=0;
+	}
+
+	int *predictionResult=new int[numberTestInstances]; //this array store our prediciton
+	if( predictionResult == NULL){
+		cout << "Error: memory could not be allocated";
+		return;
+	}
+	for(int f=0; f<numberTestInstances; f++)
+	{
+		predictionResult[f]=0;
+	}
+
+	double *testInput=new double [numberNeuronLayer1+1]; //this array store each instance for processing
+	testInput[numberNeuronLayer1]=1;
+
+	// now process each test instance
+	for( int i=0 ; i<numberTestInstances ; i++)
+	{
+		// read one instance for prediction
+		for (int u=0 ; u<numberNeuronLayer1; u++)
+			testInputg>>testInput[u];
+		testInputg>>realResult[i];
+
+		predictionResult[i]= doOnePrediction(testInput);
+	}
+
+	// calculate oeverall accuracy of our prediction
+	calculateAccuracy ( predictionResult , realResult );
+
+	delete [] realResult;
+	delete [] predictionResult;
+	delete [] testInput;
+
+} 
+
+int ann::doOnePrediction( double * testInput )
+{
+	// calculate layer 2 value
+	for(int j=0; j< numberNeuronLayer2 ; j++){
+		valueLayer2[j]=0;
+		for(int k=0; k<= numberNeuronLayer1 ; k++){
+			valueLayer2[j]+=(sigmoid(testInput[k])*weightOfNetwork[0][k][j]);					
+		}
+		valueLayer2[j]=sigmoid(valueLayer2[j]);
+	}
+
+	// calculate layer 3 value
+	for(int j=0; j< numberNeuronLayer3 ; j++){
+		valueLayer3[j]=0;
+		for(int k=0; k<= numberNeuronLayer2 ; k++){
+			valueLayer3[j]+=(valueLayer2[k]*weightOfNetwork[1][k][j]);	
+		}
+		valueLayer3[j]=sigmoid(valueLayer3[j]);
+	//	cout<<"test pattern "<<i<<" ouptut "<<valueLayer3[j]<<endl;
+	}
+	if( abs(valueLayer3[0]-sigmoid(1)) > abs(valueLayer3[0]-sigmoid(2)) ){
+		return 2;
+	}else{
+		return 1;
+	}
+}
+
+void ann::calculateAccuracy(int *predictionResult , int * result)
+{
+
+	double outputTrainInstances=0;// store the number of outputTrainInstances predictions
+
+	for( int i=0 ; i<numberTestInstances; i++)//count the number of outputTrainInstances predictions 
+	{
+		if (predictionResult[i]==result[i])
+			outputTrainInstances++;
+		cout<<"predict to be "<<predictionResult[i]<<" is actually "<<result[i]<<endl;
 	}
 	
-	cout<<"total "<<testinstances<<" data have "<<correct<<" correct prediction"<< endl;
+	cout<<"total "<<numberTestInstances<<" data have "<<outputTrainInstances<<" outputTrainInstances prediction"<< endl;
 
-	double percentage=correct/testinstances; // calculate the accuracy
+	double percentage=outputTrainInstances/numberTestInstances; // calculate the accuracy
 
 	cout<<"accuracy is "<<percentage*100<<"%"<<endl;
 }
