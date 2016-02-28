@@ -2,15 +2,15 @@
 Artificial neural network implementation in C++
 
 Usage:
-
->./ann [training data file] [input test file] [configuration file] [Optional: learn rate] [Optional: momentum] 
-
+```
+./ann [training data file] [input test file] [configuration file] [Optional: learn rate] [Optional: momentum] 
+```
 
 
 Example:
-
->./ann data.txt test.txt cfg.txt 
-
+```
+./ann data.txt test.txt cfg.txt 
+```
 
 
 Training & Test data format:
