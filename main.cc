@@ -7,40 +7,40 @@ using namespace std;
 
 int main( int argc, char** argv ){
 
-double learnrate=0;
+double learnRate=0;
 double momentum=0;
-double maxepoch=0;
-char* train;
-char* input;
-char* cfg;
+double maxEpoch=0;
+char* train_file;
+char* test_file;
+char* cfg_file;
 
 if( argc < 4 ){
-	cout<<" You need to provide training data, input data, and configuration for prediction. Please read README"<<endl;
+	cout<<" You need to provide train_fileing data, test_file data, and configuration for prediction. Please read README"<<endl;
 	return -1;
 }else{
-	train = argv[1];
-	input = argv[2];
-	cfg = argv[3];
+	train_file = argv[1];
+	test_file = argv[2];
+	cfg_file = argv[3];
 }
 
 if( argc >= 7 ){
-	maxepoch = atof(argv[6]);
+	maxEpoch = atof(argv[6]);
 	momentum = atof(argv[5]);
-	learnrate = atof(argv[4]);
-  	ann a(train, cfg, learnrate , momentum, maxepoch);
-	a.doClassify(input);
+	learnRate = atof(argv[4]);
+  	ann a(train_file, cfg_file, learnRate , momentum, maxEpoch);
+	a.doClassify(test_file);
 }else if( argc == 6 ){
 	momentum = atof(argv[5]);
-	learnrate = atof(argv[4]);
-  	ann a(train, cfg, learnrate , momentum);
-	a.doClassify(input);
+	learnRate = atof(argv[4]);
+  	ann a(train_file, cfg_file, learnRate , momentum);
+	a.doClassify(test_file);
 }else if( argc == 5 ){
-	learnrate = atof(argv[4]);
-  	ann a(train, cfg, learnrate);
-	a.doClassify(input);
+	learnRate = atof(argv[4]);
+  	ann a(train_file, cfg_file, learnRate);
+	a.doClassify(test_file);
 }else if( argc == 4 ){
-  	ann a(train, cfg);
-	a.doClassify(input);
+  	ann a(train_file, cfg_file);
+	a.doClassify(test_file);
 }
 
 return 0;
