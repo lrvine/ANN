@@ -24,6 +24,8 @@ ann::ann( char* train_file , char* configuration_file, double ilearnRate , doubl
 	//read configuration
 	readConfiguration(configuration_file);
 
+	//allocate memory for training data
+	allocateMemoryForTrainingData();
 	//read training data
 	storeTrainingData(train_file);
 	
@@ -76,13 +78,8 @@ void ann::readConfiguration( char* configuration_file )
 	//cout<<numberTrainInstances<<numberTestInstances<<numberNeuronLayer1<<numberNeuronLayer2<<numberNeuronLayer3;
 }
 
-void ann::storeTrainingData( char * train_file )
+void ann::allocateMemoryForTrainingData()
 {
-	ifstream training;
-        training.open(train_file);
-        if(!training){cout<<"Can't open training data file!"<<endl;return;}
-    
-
 	//allocate memory for inputTrainInstances data 
 	inputTrainInstances= new (nothrow) double *[numberTrainInstances];  
 	if( inputTrainInstances == NULL){
@@ -111,6 +108,13 @@ void ann::storeTrainingData( char * train_file )
 		}
 	}
 
+}
+void ann::storeTrainingData( char * train_file )
+{
+	ifstream training;
+        training.open(train_file);
+        if(!training){cout<<"Can't open training data file!"<<endl;return;}
+
 	// store inputTrainInstances data and outputTrainInstances output
 	for(int i=0; i<numberTrainInstances; i++){
 		for(int j=0; j<numberNeuronLayer1; j++){
@@ -122,7 +126,6 @@ void ann::storeTrainingData( char * train_file )
 		//init bias
 		inputTrainInstances[i][numberNeuronLayer1]=1;
 	}
-
 }
 
 void ann::releaseTrainingData()

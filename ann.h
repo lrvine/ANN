@@ -29,6 +29,7 @@ protected:
 	unsigned long long int maxEpoch;
 
 	void readConfiguration( char * ); // read configuration file
+	void allocateMemoryForTrainingData(); // allocate memory for training data
 	void storeTrainingData( char* ); // store training data
 	void releaseTrainingData(); // store training data
 	void initNetworkParameter(); // initialize the netowrk 
