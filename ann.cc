@@ -364,7 +364,7 @@ void ann::calculateAccuracy(int *predictionResult , int * result)
 		cout<<"predict to be "<<predictionResult[i]<<" is actually "<<result[i]<<endl;
 	}
 	
-	cout<<"total "<<numberTestInstances<<" data have "<<outputTrainInstances<<" outputTrainInstances prediction"<< endl;
+	cout<<"Total "<<numberTestInstances<<" test datas have "<<outputTrainInstances<<" correct predictions"<< endl;
 
 	double percentage=outputTrainInstances/numberTestInstances; // calculate the accuracy
 

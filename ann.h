@@ -39,7 +39,7 @@ protected:
 	void calculateAccuracy( int * , int * ); // claculate the accuracy
 	double sigmoid(double);
 public:
-	ann( char* train_file , char* configuration_file, double learnRate=0.01 , double momentum=0.2, double maxEpoch=5000, double maxWeightForInit=0.3, double targetError=0.000000000001, int numberLayer=3 );
+	ann( char* train_file , char* configuration_file, double learnRate=0.01 , double momentum=0.2, double maxEpoch=8000, double maxWeightForInit=0.3, double targetError=0.000000000001, int numberLayer=3 );
 	~ann();
 	void doClassify( char* );
 };
