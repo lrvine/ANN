@@ -1,6 +1,8 @@
 # ANN
 Artificial neural network implementation in C++
 
+//TODO: add suuport fo CSV file
+
 Usage:
 ```
 ./ann [training data file] [input test file] [configuration file] [Optional: learn rate] [Optional: momentum] 
