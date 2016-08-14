@@ -1,6 +1,8 @@
 # ANN
 Artificial neural network implementation in C++
 
+//TODO: add suuport fo CSV file
+
 Usage:
 ```
 ./ann [training data file] [input test file] [configuration file] [Optional: learn rate] [Optional: momentum] 
@@ -25,4 +27,4 @@ Configuration file format:
 [number of training instances] [number of test instances]  [number of input attributes( number of neuron at layer 1 )] [ number of neuron at layer 2 ] [number of neuron at layer 3 ]
 ```
 
-Data set is acquired from [UCI Machine Learning Repository](http://archive.ics.uci.edu/ml/datasets.html?format=&task=&att=&area=&numAtt=&numIns=&type=&sort=dateUp&view=table)
+Data set is acquired from [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets.html)
