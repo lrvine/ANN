@@ -66,7 +66,7 @@ ann::~ann()
 }
 
 
-void ann::readConfiguration( char* configuration_file )
+void inline ann::readConfiguration( char* configuration_file )
 {
 	//read configuration 
 	ifstream cfg;
@@ -78,7 +78,7 @@ void ann::readConfiguration( char* configuration_file )
 	//cout<<numberTrainInstances<<numberTestInstances<<numberNeuronLayer1<<numberNeuronLayer2<<numberNeuronLayer3;
 }
 
-void ann::allocateMemoryForTrainingData()
+void inline ann::allocateMemoryForTrainingData()
 {
 	//allocate memory for inputTrainInstances data 
 	inputTrainInstances= new (nothrow) double *[numberTrainInstances];  
@@ -109,7 +109,7 @@ void ann::allocateMemoryForTrainingData()
 	}
 
 }
-void ann::storeTrainingData( char * train_file )
+void inline ann::storeTrainingData( char * train_file )
 {
 	ifstream training;
         training.open(train_file);
@@ -128,7 +128,7 @@ void ann::storeTrainingData( char * train_file )
 	}
 }
 
-void ann::releaseTrainingData()
+void inline ann::releaseTrainingData()
 {
 	for(int i=0; i<numberTrainInstances; i++){
 		delete []  inputTrainInstances[i];
@@ -138,7 +138,7 @@ void ann::releaseTrainingData()
 	delete [] outputTrainInstances;
 }
 
-void ann::initNetworkParameter()
+void inline ann::initNetworkParameter()
 {
 	random_device rd;
 	mt19937 mt(rd());
@@ -201,7 +201,7 @@ void ann::printNetworkParameter()
 	cout<<endl;
 }
 
-void ann::optimizeNetworkParameter()
+void inline ann::optimizeNetworkParameter()
 {	
 	/*
 	// shuffle inputTrainInstances pattern order  : This didn't seems to improve prediction rate. Comment out for now.
@@ -325,7 +325,7 @@ void ann::doClassify( char * test_file)
 
 } 
 
-int ann::doOnePrediction( double * testInput )
+int inline ann::doOnePrediction( double * testInput )
 {
 	// calculate layer 2 value
 	for(int j=0; j< numberNeuronLayer2 ; j++){
