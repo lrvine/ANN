@@ -120,24 +120,17 @@ void inline ann::storeTrainingData( char * train_file )
         if(!trainingDataFile){cout<<"Can't open training data file!"<<endl;return;}
 
 	// store inputTrainInstances data and outputTrainInstances output
-//	cout<<numberNeuronLayer1<<" : ";
 	for(int i=0; i<numberTrainInstances; i++){
 		getline( trainingDataFile, Buf );
 		stringstream  lineStream(Buf);
 		for(int j=0; j<numberNeuronLayer1; j++){
 			getline( lineStream, Buf , ',' );
 			inputTrainInstances[i][j]=stod(Buf);
-//			cout<<inputTrainInstances[i][j]<<" ";
-//			training>>inputTrainInstances[i][j];
 		}
-//		cout<<" : ";
 		for(int j=0; j<numberNeuronLayer3; j++){
 			getline( lineStream, Buf , ',' );
 			outputTrainInstances[i][j]=stod(Buf);
-//			cout<<outputTrainInstances[i][j]<<" ";
-//			training>>outputTrainInstances[i][j];
 		}
-//		cout<<endl;
 		//init bias
 		inputTrainInstances[i][numberNeuronLayer1]=1;
 	}
@@ -327,12 +320,6 @@ void ann::doClassify( char * test_file)
 	{
 		getline( testInputFile , Buf );
 		stringstream  lineStream(Buf);
-	/*	
-		// read one instance for prediction
-		for (int u=0 ; u<numberNeuronLayer1; u++)
-			testInputFile>>testInput[u];
-		testInputFile>>realResult[i];
-*/
 
 		for (int u=0 ; u<numberNeuronLayer1; u++){
 			getline( lineStream, Buf , ',' );
