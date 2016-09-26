@@ -1,9 +1,11 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <iomanip>
 #include <cmath>
 #include <random>
 #include <limits>
+#include <string>
 
 #include "ann.h"
 
@@ -44,6 +46,7 @@ ann::ann( char* train_file , char* configuration_file, double ilearnRate , doubl
 	optimizeNetworkParameter();
 	releaseTrainingData();
 //	printNetworkParameter();
+	
 }
 
 ann::~ann()
@@ -111,18 +114,30 @@ void inline ann::allocateMemoryForTrainingData()
 }
 void inline ann::storeTrainingData( char * train_file )
 {
-	ifstream training;
-        training.open(train_file);
-        if(!training){cout<<"Can't open training data file!"<<endl;return;}
+	ifstream trainingDataFile;
+	string Buf;
+        trainingDataFile.open(train_file);
+        if(!trainingDataFile){cout<<"Can't open training data file!"<<endl;return;}
 
 	// store inputTrainInstances data and outputTrainInstances output
+//	cout<<numberNeuronLayer1<<" : ";
 	for(int i=0; i<numberTrainInstances; i++){
+		getline( trainingDataFile, Buf );
+		stringstream  lineStream(Buf);
 		for(int j=0; j<numberNeuronLayer1; j++){
-			training>>inputTrainInstances[i][j];
+			getline( lineStream, Buf , ',' );
+			inputTrainInstances[i][j]=stod(Buf);
+//			cout<<inputTrainInstances[i][j]<<" ";
+//			training>>inputTrainInstances[i][j];
 		}
+//		cout<<" : ";
 		for(int j=0; j<numberNeuronLayer3; j++){
-			training>>outputTrainInstances[i][j];
+			getline( lineStream, Buf , ',' );
+			outputTrainInstances[i][j]=stod(Buf);
+//			cout<<outputTrainInstances[i][j]<<" ";
+//			training>>outputTrainInstances[i][j];
 		}
+//		cout<<endl;
 		//init bias
 		inputTrainInstances[i][numberNeuronLayer1]=1;
 	}
@@ -278,8 +293,10 @@ void inline ann::optimizeNetworkParameter()
 void ann::doClassify( char * test_file)
 {
 
-	ifstream testInputg(test_file);
-	if(!testInputg){cout<<"Can't open test data file!"<<endl;return;}
+	ifstream testInputFile(test_file);
+	if(!testInputFile){cout<<"Can't open test data file!"<<endl;return;}
+
+	string Buf;
 
 	// prepare memeory space for prediciton
 	int *realResult= new int[numberTestInstances]; //this array store the real result for comparison
@@ -308,11 +325,22 @@ void ann::doClassify( char * test_file)
 	// now process each test instance
 	for( int i=0 ; i<numberTestInstances ; i++)
 	{
+		getline( testInputFile , Buf );
+		stringstream  lineStream(Buf);
+	/*	
 		// read one instance for prediction
 		for (int u=0 ; u<numberNeuronLayer1; u++)
-			testInputg>>testInput[u];
-		testInputg>>realResult[i];
+			testInputFile>>testInput[u];
+		testInputFile>>realResult[i];
+*/
 
+		for (int u=0 ; u<numberNeuronLayer1; u++){
+			getline( lineStream, Buf , ',' );
+			testInput[u]=stod(Buf);
+		}
+		getline( lineStream, Buf , ',' );
+		realResult[i]=stod(Buf);
+		
 		predictionResult[i]= doOnePrediction(testInput);
 	}
 

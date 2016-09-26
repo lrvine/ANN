@@ -1,5 +1,4 @@
 #include <iostream>
-#include <stdlib.h>
 #include "ann.h"
 
 using namespace std;

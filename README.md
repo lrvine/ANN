@@ -1,7 +1,6 @@
 # ANN
 Artificial neural network implementation in C++
 
-//TODO: add suuport fo CSV file
 
 Usage:
 ```
@@ -15,11 +14,11 @@ Example:
 ```
 
 
-Training & Test data format:
+Training & Test data are in CSV:
 ```
-[ attribute 1 of data 1 ]  [ attribute 2 of data 1 ] ........ [ result of data 1 ]
-[ attribute 1 of data 2 ]  [ attribute 2 of data 2 ] ........ [ result of data 2 ]
-[ attribute 1 of data 3 ]  [ attribute 2 of data 3 ] ........ [ result of data 3 ]
+[ attribute 1 of data 1 ],[ attribute 2 of data 1 ], ........ ,[ result of data 1 ]
+[ attribute 1 of data 2 ],[ attribute 2 of data 2 ], ........ ,[ result of data 2 ]
+[ attribute 1 of data 3 ],[ attribute 2 of data 3 ], ........ ,[ result of data 3 ]
 ```
 
 Configuration file format:
