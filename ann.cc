@@ -277,7 +277,8 @@ void inline ann::optimizeNetworkParameter()
 		error=error/numberTrainInstances;
 		deltaerror=abs(error-perror);
 		perror=error;
-		cout<<" end of epoch "<<epoch<<" error is "<<error<<" error delta is "<<deltaerror<<endl;
+		if(epoch%100==0)
+			cout<<" end of epoch "<<epoch<<" error is "<<error<<" error delta is "<<deltaerror<<endl;
 		epoch++;
 	}
 
@@ -376,14 +377,14 @@ void ann::calculateAccuracy(int *predictionResult , int * result)
 	{
 		if (predictionResult[i]==result[i])
 			outputTrainInstances++;
-		cout<<"predict to be "<<predictionResult[i]<<" is actually "<<result[i]<<endl;
+		cout<<"Test instance "<<i<<" : predict to be "<<predictionResult[i]<<" when it is actually "<<result[i]<<endl;
 	}
 	
 	cout<<"Total "<<numberTestInstances<<" test datas have "<<outputTrainInstances<<" correct predictions"<< endl;
 
 	double percentage=outputTrainInstances/numberTestInstances; // calculate the accuracy
 
-	cout<<"accuracy is "<<percentage*100<<"%"<<endl;
+	cout<<"Accuracy is "<<percentage*100<<"%"<<endl;
 }
 
 double inline ann::sigmoid(double x )
