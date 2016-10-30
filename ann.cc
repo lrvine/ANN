@@ -6,11 +6,9 @@
 #include <random>
 #include <limits>
 #include <string>
-
 #include "ann.h"
 
-using namespace std;
-
+namespace ann {
 
 //initialize all the information we need from training data
 ann::ann( char* train_file , char* configuration_file, double ilearnRate , double imomentum, double imaxEpoch, double imaxWeightForInit, double itargetError, int inumberLayer )
@@ -72,13 +70,13 @@ ann::~ann()
 void inline ann::readConfiguration( char* configuration_file )
 {
 	//read configuration 
-	ifstream cfg;
+	std::ifstream cfg;
         cfg.open(configuration_file);
-        if(!cfg){cout<<"Can't open configure file!"<<endl;return;}
+        if(!cfg){std::cout<<"Can't open configure file!"<<std::endl;return;}
 
 	cfg>>numberTrainInstances>>numberTestInstances>>numberNeuronLayer1>>numberNeuronLayer2>>numberNeuronLayer3;
 	cfg.close();
-	//cout<<numberTrainInstances<<numberTestInstances<<numberNeuronLayer1<<numberNeuronLayer2<<numberNeuronLayer3;
+	//std::cout<<numberTrainInstances<<numberTestInstances<<numberNeuronLayer1<<numberNeuronLayer2<<numberNeuronLayer3;
 }
 
 void inline ann::allocateMemoryForTrainingData()
@@ -86,13 +84,13 @@ void inline ann::allocateMemoryForTrainingData()
 	//allocate memory for inputTrainInstances data 
 	inputTrainInstances= new (nothrow) double *[numberTrainInstances];  
 	if( inputTrainInstances == NULL){
-		cout << "Error: memory could not be allocated";
+		std::cout << "Error: memory could not be allocated";
 		return;
 	}
 	for(int b=0; b<numberTrainInstances; b++){   
 		inputTrainInstances[b]= new double[numberNeuronLayer1+1];
 		if( inputTrainInstances[b] == NULL){
-			cout << "Error: memory could not be allocated";
+			std::cout << "Error: memory could not be allocated";
 			return;
 		}
 	}
@@ -100,13 +98,13 @@ void inline ann::allocateMemoryForTrainingData()
 	//allocate memory for outputTrainInstances output 
 	outputTrainInstances= new (nothrow) double *[numberTrainInstances];  
 	if( outputTrainInstances == NULL){
-		cout << "Error: memory could not be allocated";
+		std::cout << "Error: memory could not be allocated";
 		return;
 	}
 	for(int b=0; b<numberTrainInstances; b++){   
 		outputTrainInstances[b]= new double[numberNeuronLayer3];
 		if( outputTrainInstances[b] == NULL){
-			cout << "Error: memory could not be allocated";
+			std::cout << "Error: memory could not be allocated";
 			return;
 		}
 	}
@@ -114,15 +112,15 @@ void inline ann::allocateMemoryForTrainingData()
 }
 void inline ann::storeTrainingData( char * train_file )
 {
-	ifstream trainingDataFile;
-	string Buf;
+	std::ifstream trainingDataFile;
+	std::string Buf;
         trainingDataFile.open(train_file);
-        if(!trainingDataFile){cout<<"Can't open training data file!"<<endl;return;}
+        if(!trainingDataFile){std::cout<<"Can't open training data file!"<<std::endl;return;}
 
 	// store inputTrainInstances data and outputTrainInstances output
 	for(int i=0; i<numberTrainInstances; i++){
 		getline( trainingDataFile, Buf );
-		stringstream  lineStream(Buf);
+		std::std::stringstream  lineStream(Buf);
 		for(int j=0; j<numberNeuronLayer1; j++){
 			getline( lineStream, Buf , ',' );
 			inputTrainInstances[i][j]=stod(Buf);
@@ -195,18 +193,18 @@ void ann::printNetworkParameter()
 {
 	for(int j=0; j<=numberNeuronLayer1; j++){
 		for(int k=0; k< numberNeuronLayer2; k++){
-		  cout<<weightOfNetwork[0][j][k]<<" ";
+		  std::cout<<weightOfNetwork[0][j][k]<<" ";
 		}
-		cout<<endl;
+		std::cout<<std::endl;
 	}
-	cout<<endl;
+	std::cout<<std::endl;
 	for(int j=0; j<=numberNeuronLayer2; j++){
 		for(int k=0; k< numberNeuronLayer3; k++){
-		  cout<<weightOfNetwork[1][j][k]<<" ";
+		  std::cout<<weightOfNetwork[1][j][k]<<" ";
 		}
-		cout<<endl;
+		std::cout<<std::endl;
 	}
-	cout<<endl;
+	std::cout<<std::endl;
 }
 
 void inline ann::optimizeNetworkParameter()
@@ -220,9 +218,9 @@ void inline ann::optimizeNetworkParameter()
 	}
 	*/
 	unsigned long long int epoch=0;
-	double error = numeric_limits<double>::max();
-	double perror = numeric_limits<double>::max();
-	double deltaerror = numeric_limits<double>::max();
+	double error = std::numeric_limits<double>::max();
+	double perror = std::numeric_limits<double>::max();
+	double deltaerror = std::numeric_limits<double>::max();
 	while( epoch < maxEpoch && deltaerror > targetError ){
 		// train each pattern for one epoch
 		error=0;
@@ -235,9 +233,9 @@ void inline ann::optimizeNetworkParameter()
 					valueLayer2[j]+=(sigmoid(inputTrainInstances[i][k])*weightOfNetwork[0][k][j]);	
 				}
 				valueLayer2[j]=sigmoid(valueLayer2[j]);
-		//		cout<<valueLayer2[j]<<" ";
+		//		std::cout<<valueLayer2[j]<<" ";
 			}
-		//	cout<<endl;
+		//	std::cout<<std::endl;
 			// calculate layer 3 value
 			for(int j=0; j< numberNeuronLayer3 ; j++){
 				valueLayer3[j]=0;
@@ -246,7 +244,7 @@ void inline ann::optimizeNetworkParameter()
 				}
 				valueLayer3[j]=sigmoid(valueLayer3[j]);
 				error += pow((valueLayer3[j]-sigmoid(outputTrainInstances[i][j])),2)/2;
-				//cout<<"valueLayer3[j] "<<valueLayer3[j]<<" outputTrainInstances "<<sigmoid(outputTrainInstances[i][j])<<"error "<<error<<endl;
+				//std::cout<<"valueLayer3[j] "<<valueLayer3[j]<<" outputTrainInstances "<<sigmoid(outputTrainInstances[i][j])<<"error "<<error<<std::endl;
 				// calculate delta gradient of layer3
 				deltaGradientOfNetwork[1][j]=((valueLayer3[j]-sigmoid(outputTrainInstances[i][j]))*valueLayer3[j]*(1-valueLayer3[j]));
 			}
@@ -275,10 +273,10 @@ void inline ann::optimizeNetworkParameter()
 
 		}
 		error=error/numberTrainInstances;
-		deltaerror=abs(error-perror);
+		deltaerror=std::abs(error-perror);
 		perror=error;
 		if(epoch%100==0)
-			cout<<" end of epoch "<<epoch<<" error is "<<error<<" error delta is "<<deltaerror<<endl;
+			std::cout<<" end of epoch "<<epoch<<" error is "<<error<<" error delta is "<<deltaerror<<std::endl;
 		epoch++;
 	}
 
@@ -287,15 +285,15 @@ void inline ann::optimizeNetworkParameter()
 void ann::doClassify( char * test_file)
 {
 
-	ifstream testInputFile(test_file);
-	if(!testInputFile){cout<<"Can't open test data file!"<<endl;return;}
+	std::ifstream testInputFile(test_file);
+	if(!testInputFile){std::cout<<"Can't open test data file!"<<std::endl;return;}
 
-	string Buf;
+	std::string Buf;
 
 	// prepare memeory space for prediciton
 	int *realResult= new int[numberTestInstances]; //this array store the real result for comparison
 	if( realResult == NULL){
-		cout << "Error: memory could not be allocated";
+		std::cout << "Error: memory could not be allocated";
 		return;
 	}
 	for(int w=0; w<numberTestInstances; w++)
@@ -305,7 +303,7 @@ void ann::doClassify( char * test_file)
 
 	int *predictionResult=new int[numberTestInstances]; //this array store our prediciton
 	if( predictionResult == NULL){
-		cout << "Error: memory could not be allocated";
+		std::cout << "Error: memory could not be allocated";
 		return;
 	}
 	for(int f=0; f<numberTestInstances; f++)
@@ -320,7 +318,7 @@ void ann::doClassify( char * test_file)
 	for( int i=0 ; i<numberTestInstances ; i++)
 	{
 		getline( testInputFile , Buf );
-		stringstream  lineStream(Buf);
+		std::std::stringstream  lineStream(Buf);
 
 		for (int u=0 ; u<numberNeuronLayer1; u++){
 			getline( lineStream, Buf , ',' );
@@ -359,9 +357,9 @@ int inline ann::doOnePrediction( double * testInput )
 			valueLayer3[j]+=(valueLayer2[k]*weightOfNetwork[1][k][j]);	
 		}
 		valueLayer3[j]=sigmoid(valueLayer3[j]);
-	//	cout<<"test pattern "<<i<<" ouptut "<<valueLayer3[j]<<endl;
+	//	std::cout<<"test pattern "<<i<<" ouptut "<<valueLayer3[j]<<std::endl;
 	}
-	if( abs(valueLayer3[0]-sigmoid(1)) > abs(valueLayer3[0]-sigmoid(2)) ){
+	if( std::abs(valueLayer3[0]-sigmoid(1)) > std::abs(valueLayer3[0]-sigmoid(2)) ){
 		return 2;
 	}else{
 		return 1;
@@ -377,14 +375,14 @@ void ann::calculateAccuracy(int *predictionResult , int * result)
 	{
 		if (predictionResult[i]==result[i])
 			outputTrainInstances++;
-		cout<<"Test instance "<<i<<" : predict to be "<<predictionResult[i]<<" when it is actually "<<result[i]<<endl;
+		std::cout<<"Test instance "<<i<<" : predict to be "<<predictionResult[i]<<" when it is actually "<<result[i]<<std::endl;
 	}
 	
-	cout<<"Total "<<numberTestInstances<<" test datas have "<<outputTrainInstances<<" correct predictions"<< endl;
+	std::cout<<"Total "<<numberTestInstances<<" test datas have "<<outputTrainInstances<<" correct predictions"<< std::endl;
 
 	double percentage=outputTrainInstances/numberTestInstances; // calculate the accuracy
 
-	cout<<"Accuracy is "<<percentage*100<<"%"<<endl;
+	std::cout<<"Accuracy is "<<percentage*100<<"%"<<std::endl;
 }
 
 double inline ann::sigmoid(double x )
@@ -393,3 +391,5 @@ double inline ann::sigmoid(double x )
 	x=1/(1+x);
 	return x;
 }
+
+

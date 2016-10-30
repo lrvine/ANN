@@ -1,5 +1,8 @@
 #ifndef ann_h
 #define ann_h
+
+namespace ann{
+
 class ann
 {
 protected:
@@ -43,4 +46,6 @@ public:
 	~ann();
 	void doClassify( char* );
 };
+
+}// end of namespace ann
 #endif
