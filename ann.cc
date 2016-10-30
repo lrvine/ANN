@@ -82,7 +82,7 @@ void inline ann::readConfiguration( char* configuration_file )
 void inline ann::allocateMemoryForTrainingData()
 {
 	//allocate memory for inputTrainInstances data 
-	inputTrainInstances= new (nothrow) double *[numberTrainInstances];  
+	inputTrainInstances= new (std::nothrow) double *[numberTrainInstances];  
 	if( inputTrainInstances == NULL){
 		std::cout << "Error: memory could not be allocated";
 		return;
@@ -96,7 +96,7 @@ void inline ann::allocateMemoryForTrainingData()
 	}
 
 	//allocate memory for outputTrainInstances output 
-	outputTrainInstances= new (nothrow) double *[numberTrainInstances];  
+	outputTrainInstances= new (std::nothrow) double *[numberTrainInstances];  
 	if( outputTrainInstances == NULL){
 		std::cout << "Error: memory could not be allocated";
 		return;
@@ -120,7 +120,7 @@ void inline ann::storeTrainingData( char * train_file )
 	// store inputTrainInstances data and outputTrainInstances output
 	for(int i=0; i<numberTrainInstances; i++){
 		getline( trainingDataFile, Buf );
-		std::std::stringstream  lineStream(Buf);
+		std::stringstream  lineStream(Buf);
 		for(int j=0; j<numberNeuronLayer1; j++){
 			getline( lineStream, Buf , ',' );
 			inputTrainInstances[i][j]=stod(Buf);
@@ -146,9 +146,9 @@ void inline ann::releaseTrainingData()
 
 void inline ann::initNetworkParameter()
 {
-	random_device rd;
-	mt19937 mt(rd());
-	uniform_real_distribution<double> dist(0, 1);
+	std::random_device rd;
+	std::mt19937 mt(rd());
+	std::uniform_real_distribution<double> dist(0, 1);
 
 	weightOfNetwork = new double **[numberLayer-1];
 	weightDeltaOfNetwork = new double **[numberLayer-1];
@@ -318,7 +318,7 @@ void ann::doClassify( char * test_file)
 	for( int i=0 ; i<numberTestInstances ; i++)
 	{
 		getline( testInputFile , Buf );
-		std::std::stringstream  lineStream(Buf);
+		std::stringstream  lineStream(Buf);
 
 		for (int u=0 ; u<numberNeuronLayer1; u++){
 			getline( lineStream, Buf , ',' );
@@ -393,3 +393,4 @@ double inline ann::sigmoid(double x )
 }
 
 
+}// end of namespace ann
