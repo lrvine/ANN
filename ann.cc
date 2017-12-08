@@ -40,10 +40,9 @@ ann::ann( char* train_file , char* configuration_file, double ilearnRate , doubl
 
 	//allocate memory and initialize neural layer parameters
 	initNetworkParameter();		
-//	printNetworkParameter();
+	//printNetworkParameter();
 	optimizeNetworkParameter();
 	releaseTrainingData();
-//	printNetworkParameter();
 	
 }
 
@@ -224,7 +223,7 @@ void inline ann::optimizeNetworkParameter()
 	while( epoch < maxEpoch && deltaerror > targetError ){
 		// train each pattern for one epoch
 		error=0;
-//		random_shuffle(ilist.begin(),ilist.end());
+		//random_shuffle(ilist.begin(),ilist.end());
 		for(int i=0; i< numberTrainInstances ; i++){
 			// calculate layer 2 value
 			for(int j=0; j< numberNeuronLayer2 ; j++){
@@ -233,9 +232,7 @@ void inline ann::optimizeNetworkParameter()
 					valueLayer2[j]+=(sigmoid(inputTrainInstances[i][k])*weightOfNetwork[0][k][j]);	
 				}
 				valueLayer2[j]=sigmoid(valueLayer2[j]);
-		//		std::cout<<valueLayer2[j]<<" ";
 			}
-		//	std::cout<<std::endl;
 			// calculate layer 3 value
 			for(int j=0; j< numberNeuronLayer3 ; j++){
 				valueLayer3[j]=0;
@@ -243,12 +240,15 @@ void inline ann::optimizeNetworkParameter()
 					valueLayer3[j]+=(valueLayer2[k]*weightOfNetwork[1][k][j]);	
 				}
 				valueLayer3[j]=sigmoid(valueLayer3[j]);
+			}
+			// start backpropagation: calculate error and partial derivative of the error with respect to weights of layer3
+			// Refer to https://en.wikipedia.org/wiki/Backpropagation
+			for(int j=0; j< numberNeuronLayer3 ; j++){
 				error += pow((valueLayer3[j]-sigmoid(outputTrainInstances[i][j])),2)/2;
-				//std::cout<<"valueLayer3[j] "<<valueLayer3[j]<<" outputTrainInstances "<<sigmoid(outputTrainInstances[i][j])<<"error "<<error<<std::endl;
-				// calculate delta gradient of layer3
+				//partial derivative with sigmoid could be simplified as (Ooutput-Target)*Output*(1-Output)
 				deltaGradientOfNetwork[1][j]=((valueLayer3[j]-sigmoid(outputTrainInstances[i][j]))*valueLayer3[j]*(1-valueLayer3[j]));
 			}
-			// calculate delta gradient of layer2
+			// backprogapate to layer 2
 			for(int j=0; j< numberNeuronLayer2 ; j++){
 				deltaGradientOfNetwork[0][j]=0;
 				for(int k=0; k< numberNeuronLayer3 ; k++){
@@ -357,7 +357,6 @@ int inline ann::doOnePrediction( double * testInput )
 			valueLayer3[j]+=(valueLayer2[k]*weightOfNetwork[1][k][j]);	
 		}
 		valueLayer3[j]=sigmoid(valueLayer3[j]);
-	//	std::cout<<"test pattern "<<i<<" ouptut "<<valueLayer3[j]<<std::endl;
 	}
 	if( std::abs(valueLayer3[0]-sigmoid(1)) > std::abs(valueLayer3[0]-sigmoid(2)) ){
 		return 2;
