@@ -1,3 +1,5 @@
+#include <cmath>
+
 #ifndef ann_h
 #define ann_h
 
@@ -31,18 +33,17 @@ class ann {
   double maxWeightForInit;
   unsigned long long int maxEpoch;
 
-  void inline readConfiguration(char*);         // read configuration file
-  void inline allocateMemoryForTrainingData();  // allocate memory for training
-                                                // data
-  void inline storeTrainingData(char*);         // store training data
-  void inline releaseTrainingData();            // store training data
-  void inline initNetworkParameter();           // initialize the netowrk
-  void printNetworkParameter();  // print out network parameter for debug
-  void inline optimizeNetworkParameter();  // optimize the network parameter via
-                                           // training data
-  int inline doOnePrediction(
-      double*);  // calculate the probability of each choice and choose the
-                 // greatest one as our prediction
+  void readConfiguration(char*);         // read configuration file
+  void allocateMemoryForTrainingData();  // allocate memory for training
+                                         // data
+  void storeTrainingData(char*);         // store training data
+  void releaseTrainingData();            // store training data
+  void initNetworkParameter();           // initialize the netowrk
+  void printNetworkParameter();     // print out network parameter for debug
+  void optimizeNetworkParameter();  // optimize the network parameter via
+                                    // training data
+  int doOnePrediction(double*);  // calculate the probability of each choice and
+                                 // choose the greatest one as our prediction
   void calculateAccuracy(int*, int*);  // claculate the accuracy
   double inline sigmoid(double);
 
@@ -54,6 +55,12 @@ class ann {
   ~ann();
   void doClassify(char*);
 };
+
+double inline ann::sigmoid(double x) {
+  x = exp(-x);
+  x = 1 / (1 + x);
+  return x;
+}
 
 }  // end of namespace ann
 #endif

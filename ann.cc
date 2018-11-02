@@ -1,4 +1,5 @@
 #include "ann.h"
+
 #include <cmath>
 #include <fstream>
 #include <iomanip>
@@ -7,7 +8,6 @@
 #include <random>
 #include <sstream>
 #include <string>
-
 
 namespace ann {
 
@@ -65,7 +65,7 @@ ann::~ann() {
   delete[] deltaGradientOfNetwork;
 }
 
-void inline ann::readConfiguration(char *configuration_file) {
+void ann::readConfiguration(char *configuration_file) {
   // read configuration
   std::ifstream cfg;
   cfg.open(configuration_file);
@@ -80,7 +80,7 @@ void inline ann::readConfiguration(char *configuration_file) {
   // std::cout<<numberTrainInstances<<numberTestInstances<<numberNeuronLayer1<<numberNeuronLayer2<<numberNeuronLayer3;
 }
 
-void inline ann::allocateMemoryForTrainingData() {
+void ann::allocateMemoryForTrainingData() {
   // allocate memory for inputTrainInstances data
   inputTrainInstances = new (std::nothrow) double *[numberTrainInstances];
   if (inputTrainInstances == NULL) {
@@ -109,7 +109,7 @@ void inline ann::allocateMemoryForTrainingData() {
     }
   }
 }
-void inline ann::storeTrainingData(char *train_file) {
+void ann::storeTrainingData(char *train_file) {
   std::ifstream trainingDataFile;
   std::string Buf;
   trainingDataFile.open(train_file);
@@ -135,7 +135,7 @@ void inline ann::storeTrainingData(char *train_file) {
   }
 }
 
-void inline ann::releaseTrainingData() {
+void ann::releaseTrainingData() {
   for (int i = 0; i < numberTrainInstances; i++) {
     delete[] inputTrainInstances[i];
     delete[] outputTrainInstances[i];
@@ -144,7 +144,7 @@ void inline ann::releaseTrainingData() {
   delete[] outputTrainInstances;
 }
 
-void inline ann::initNetworkParameter() {
+void ann::initNetworkParameter() {
   std::random_device rd;
   std::mt19937 mt(rd());
   std::uniform_real_distribution<double> dist(0, 1);
@@ -205,7 +205,7 @@ void ann::printNetworkParameter() {
   std::cout << std::endl;
 }
 
-void inline ann::optimizeNetworkParameter() {
+void ann::optimizeNetworkParameter() {
   /*
   // shuffle inputTrainInstances pattern order  : This didn't seems to improve
   prediction rate. Comment out for now. srand ( unsigned ( std::time(0) ) );
@@ -350,7 +350,7 @@ void ann::doClassify(char *test_file) {
   delete[] testInput;
 }
 
-int inline ann::doOnePrediction(double *testInput) {
+int ann::doOnePrediction(double *testInput) {
   // calculate layer 2 value
   for (int j = 0; j < numberNeuronLayer2; j++) {
     valueLayer2[j] = 0;
@@ -396,12 +396,6 @@ void ann::calculateAccuracy(int *predictionResult, int *result) {
       outputTrainInstances / numberTestInstances;  // calculate the accuracy
 
   std::cout << "Accuracy is " << percentage * 100 << "%" << std::endl;
-}
-
-double inline ann::sigmoid(double x) {
-  x = exp(-x);
-  x = 1 / (1 + x);
-  return x;
 }
 
 }  // end of namespace ann
