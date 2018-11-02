@@ -7,56 +7,57 @@ namespace ann {
 
 class ann {
  protected:
-  int numberTrainInstances;       // store the number of training instances
-  int numberTestInstances;        // store the number of testing instances
-  double** inputTrainInstances;   // store the whole input of training instances
-  double** outputTrainInstances;  // store the whole output of training
-                                  // instances
+  int num_train_instances_;  // store the number of training instances
+  int num_test_instances_;   // store the number of testing instances
+  double**
+      input_train_instances_;  // store the whole input of training instances
+  double** output_train_instances_;  // store the whole output of training
+                                     // instances
 
   // Neural Network structure
-  int numberNeuronLayer1;
-  int numberNeuronLayer2;
-  int numberNeuronLayer3;
-  int numberLayer;
+  int num_neuron_layer1_;
+  int num_neuron_layer2_;
+  int num_neuron_layer3_;
+  int num_layer_;
 
   // Neural Network parameters
-  double* valueLayer2;
-  double* valueLayer3;
-  double*** weightOfNetwork;
-  double*** weightDeltaOfNetwork;
-  double** deltaGradientOfNetwork;
+  double* layer2_parameters_;
+  double* layer3_parameters_;
+  double*** weight_of_network_;
+  double*** weight_delta_of_network_;
+  double** delta_gradient_of_network_;
 
   // Neural Netowrk attributes
-  double targetError;
-  double learnRate;
-  double momentum;
-  double maxWeightForInit;
-  unsigned long long int maxEpoch;
+  double target_error_;
+  double learn_rate_;
+  double momentum_;
+  double max_weight_for_init_;
+  long long int max_epoch_;
 
-  void readConfiguration(char*);         // read configuration file
-  void allocateMemoryForTrainingData();  // allocate memory for training
+  void ReadConfiguration(char*);         // read configuration file
+  void AllocateMemoryForTrainingData();  // allocate memory for training
                                          // data
-  void storeTrainingData(char*);         // store training data
-  void releaseTrainingData();            // store training data
-  void initNetworkParameter();           // initialize the netowrk
-  void printNetworkParameter();     // print out network parameter for debug
-  void optimizeNetworkParameter();  // optimize the network parameter via
+  void StoreTrainingData(char*);         // store training data
+  void ReleaseTrainingData();            // store training data
+  void InitNetworkParameter();           // initialize the netowrk
+  void PrintNetworkParameter();     // print out network parameter for debug
+  void OptimizeNetworkParameter();  // optimize the network parameter via
                                     // training data
-  int doOnePrediction(double*);  // calculate the probability of each choice and
+  int DoOnePrediction(double*);  // calculate the probability of each choice and
                                  // choose the greatest one as our prediction
-  void calculateAccuracy(int*, int*);  // claculate the accuracy
-  double inline sigmoid(double);
+  void CalculateAccuracy(int*, int*);  // claculate the accuracy
+  double inline Sigmoid(double);
 
  public:
-  ann(char* train_file, char* configuration_file, double learnRate = 0.01,
-      double momentum = 0.2, double maxEpoch = 8000,
-      double maxWeightForInit = 0.3, double targetError = 0.000000000001,
-      int numberLayer = 3);
+  ann(char* train_file, char* configuration_file, double learn_rate_ = 0.01,
+      double momentum_ = 0.2, double max_epoch_ = 8000,
+      double max_weight_for_init_ = 0.3, double target_error_ = 0.000000000001,
+      int num_layer_ = 3);
   ~ann();
   void doClassify(char*);
 };
 
-double inline ann::sigmoid(double x) {
+double inline ann::Sigmoid(double x) {
   x = exp(-x);
   x = 1 / (1 + x);
   return x;
