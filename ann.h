@@ -8,11 +8,12 @@ namespace ann {
 
 class ann {
  public:
-  ann(char* train_file, char* configuration_file, double learn_rate_ = 0.01,
+  ann(char* configuration_file, double learn_rate_ = 0.01,
       double momentum_ = 0.2, double max_epoch_ = 5000,
       double max_weight_for_init_ = 0.3, double target_error_ = 0.000000000001,
       int num_layer_ = 3);
   ~ann();
+  void Train(char*);
   void Predict(char*);
 
  protected:
@@ -55,14 +56,12 @@ class ann {
   int DoOnePrediction(double*);  // calculate the probability of each choice and
                                  // choose the greatest one as our prediction
   void CalculateAccuracy(int*, int*);  // claculate the accuracy
-  double inline Sigmoid(double);
+  double inline Sigmoid(double x) {
+    x = exp(-x);
+    x = 1 / (1 + x);
+    return x;
+  }
 };
-
-double inline ann::Sigmoid(double x) {
-  x = exp(-x);
-  x = 1 / (1 + x);
-  return x;
-}
 
 }  // end of namespace ann
 #endif

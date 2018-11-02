@@ -12,8 +12,8 @@
 namespace ann {
 
 // initialize all the information we need from training data
-ann::ann(char *train_file, char *configuration_file, double ilearn_rate_,
-         double imomentum_, double imax_epoch_, double imax_weight_for_init_,
+ann::ann(char *configuration_file, double ilearn_rate_, double imomentum_,
+         double imax_epoch_, double imax_weight_for_init_,
          double itarget_error_, int inum_layer_) {
   // set initial value
   learn_rate_ = ilearn_rate_;
@@ -22,10 +22,29 @@ ann::ann(char *train_file, char *configuration_file, double ilearn_rate_,
   max_weight_for_init_ = imax_weight_for_init_;
   target_error_ = itarget_error_;
   num_layer_ = inum_layer_;
-
   // read configuration
   ReadConfiguration(configuration_file);
+}
 
+ann::~ann() {
+  delete[] layer2_parameters_;
+  delete[] layer3_parameters_;
+
+  for (int i = 0; i < (num_layer_ - 1); i++) {
+    for (int j = 0; j <= num_neuron_layer1_; j++) {
+      delete[] weight_of_network_[i][j];
+      delete[] weight_delta_of_network_[i][j];
+    }
+    delete[] weight_of_network_[i];
+    delete[] weight_delta_of_network_[i];
+    delete[] delta_gradient_of_network_[i];
+  }
+  delete[] weight_of_network_;
+  delete[] weight_delta_of_network_;
+  delete[] delta_gradient_of_network_;
+}
+
+void ann::Train(char *train_file) {
   // allocate memory for training data
   AllocateMemoryForTrainingData();
   // read training data
@@ -45,24 +64,6 @@ ann::ann(char *train_file, char *configuration_file, double ilearn_rate_,
   // PrintNetworkParameter();
   OptimizeNetworkParameter();
   ReleaseTrainingData();
-}
-
-ann::~ann() {
-  delete[] layer2_parameters_;
-  delete[] layer3_parameters_;
-
-  for (int i = 0; i < (num_layer_ - 1); i++) {
-    for (int j = 0; j <= num_neuron_layer1_; j++) {
-      delete[] weight_of_network_[i][j];
-      delete[] weight_delta_of_network_[i][j];
-    }
-    delete[] weight_of_network_[i];
-    delete[] weight_delta_of_network_[i];
-    delete[] delta_gradient_of_network_[i];
-  }
-  delete[] weight_of_network_;
-  delete[] weight_delta_of_network_;
-  delete[] delta_gradient_of_network_;
 }
 
 void ann::ReadConfiguration(char *configuration_file) {
