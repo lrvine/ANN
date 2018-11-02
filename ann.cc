@@ -298,7 +298,7 @@ void ann::OptimizeNetworkParameter() {
   }
 }
 
-void ann::doClassify(char *test_file) {
+void ann::Predict(char *test_file) {
   std::ifstream testInputFile(test_file);
   if (!testInputFile) {
     std::cout << "Can't open test data file!" << std::endl;

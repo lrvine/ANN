@@ -24,26 +24,27 @@ int main(int argc, char** argv) {
     test_file = argv[2];
     cfg_file = argv[3];
   }
-  begin = clock();
+
   if (argc >= 7) {
     maxEpoch = atof(argv[6]);
-    momentum = atof(argv[5]);
-    learnRate = atof(argv[4]);
-    ann::ann a(train_file, cfg_file, learnRate, momentum, maxEpoch);
-    a.doClassify(test_file);
-  } else if (argc == 6) {
-    momentum = atof(argv[5]);
-    learnRate = atof(argv[4]);
-    ann::ann a(train_file, cfg_file, learnRate, momentum);
-    a.doClassify(test_file);
-  } else if (argc == 5) {
-    learnRate = atof(argv[4]);
-    ann::ann a(train_file, cfg_file, learnRate);
-    a.doClassify(test_file);
-  } else if (argc == 4) {
-    ann::ann a(train_file, cfg_file);
-    a.doClassify(test_file);
+  } else {
+    maxEpoch = 5000;
   }
+  if (argc >= 6) {
+    momentum = atof(argv[5]);
+  } else {
+    momentum = 0.2;
+  }
+  if (argc >= 5) {
+    learnRate = atof(argv[4]);
+  } else {
+    learnRate = 0.01;
+  }
+
+  begin = clock();
+  ann::ann aneuralnet(train_file, cfg_file, learnRate, momentum, maxEpoch);
+  aneuralnet.Predict(test_file);
+
   end = clock();
   time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
   std::cout << "Time spent " << time_spent << " seconds " << std::endl;

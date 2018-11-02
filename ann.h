@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <cmath>
 
 #ifndef ann_h
@@ -6,6 +7,14 @@
 namespace ann {
 
 class ann {
+ public:
+  ann(char* train_file, char* configuration_file, double learn_rate_ = 0.01,
+      double momentum_ = 0.2, double max_epoch_ = 5000,
+      double max_weight_for_init_ = 0.3, double target_error_ = 0.000000000001,
+      int num_layer_ = 3);
+  ~ann();
+  void Predict(char*);
+
  protected:
   int num_train_instances_;  // store the number of training instances
   int num_test_instances_;   // store the number of testing instances
@@ -32,7 +41,7 @@ class ann {
   double learn_rate_;
   double momentum_;
   double max_weight_for_init_;
-  long long int max_epoch_;
+  int64_t max_epoch_;
 
   void ReadConfiguration(char*);         // read configuration file
   void AllocateMemoryForTrainingData();  // allocate memory for training
@@ -47,14 +56,6 @@ class ann {
                                  // choose the greatest one as our prediction
   void CalculateAccuracy(int*, int*);  // claculate the accuracy
   double inline Sigmoid(double);
-
- public:
-  ann(char* train_file, char* configuration_file, double learn_rate_ = 0.01,
-      double momentum_ = 0.2, double max_epoch_ = 8000,
-      double max_weight_for_init_ = 0.3, double target_error_ = 0.000000000001,
-      int num_layer_ = 3);
-  ~ann();
-  void doClassify(char*);
 };
 
 double inline ann::Sigmoid(double x) {
