@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 
+namespace machinelearning {
 namespace ann {
 
 // initialize all the information we need from training data
@@ -23,7 +24,7 @@ ann::ann(char *configuration_file, double ilearn_rate_, double imomentum_,
   target_error_ = itarget_error_;
   num_layer_ = inum_layer_;
   // read configuration
-  ReadConfiguration(configuration_file);
+  ParseConfiguration(configuration_file);
 }
 
 ann::~ann() {
@@ -66,7 +67,7 @@ void ann::Train(char *train_file) {
   ReleaseTrainingData();
 }
 
-void ann::ReadConfiguration(char *configuration_file) {
+void ann::ParseConfiguration(char *configuration_file) {
   // read configuration
   std::ifstream cfg;
   cfg.open(configuration_file);
@@ -216,11 +217,11 @@ void ann::OptimizeNetworkParameter() {
           ilist.push_back(i);
   }
   */
-  unsigned long long int epoch = 0;
+  unsigned long long int epoch = 1;
   double error = std::numeric_limits<double>::max();
   double perror = std::numeric_limits<double>::max();
   double deltaerror = std::numeric_limits<double>::max();
-  while (epoch < max_epoch_ && deltaerror > target_error_) {
+  while (epoch <= max_epoch_ && deltaerror > target_error_) {
     // train each pattern for one epoch
     error = 0;
     // random_shuffle(ilist.begin(),ilist.end());
@@ -350,7 +351,7 @@ void ann::Predict(char *test_file) {
   }
 
   // calculate oeverall accuracy of our prediction
-  CalculateAccuracy(predictionResult, realResult);
+  Accuracy(predictionResult, realResult);
 
   delete[] realResult;
   delete[] predictionResult;
@@ -385,26 +386,5 @@ int ann::DoOnePrediction(double *testInput) {
   }
 }
 
-void ann::CalculateAccuracy(int *predictionResult, int *result) {
-  double output_train_instances_ =
-      0;  // store the number of output_train_instances_ predictions
-
-  for (int i = 0; i < num_test_instances_;
-       i++)  // count the number of output_train_instances_ predictions
-  {
-    if (predictionResult[i] == result[i]) output_train_instances_++;
-    std::cout << "Test instance " << i << " : predict to be "
-              << predictionResult[i] << " when it is actually " << result[i]
-              << std::endl;
-  }
-
-  std::cout << "Total " << num_test_instances_ << " test datas have "
-            << output_train_instances_ << " correct predictions" << std::endl;
-
-  double percentage =
-      output_train_instances_ / num_test_instances_;  // calculate the accuracy
-
-  std::cout << "Accuracy is " << percentage * 100 << "%" << std::endl;
-}
-
 }  // end of namespace ann
+}  // namespace machinelearning

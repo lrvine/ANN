@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
 
   begin = clock();
 
-  ann::ann aneuralnet(cfg_file, learnRate, momentum, maxEpoch);
+  machinelearning::ann::ann aneuralnet(cfg_file, learnRate, momentum, maxEpoch);
   aneuralnet.Train(train_file);
   aneuralnet.Predict(test_file);
 
