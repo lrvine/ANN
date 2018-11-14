@@ -300,41 +300,22 @@ void ann::OptimizeNetworkParameter() {
   }
 }
 
-void ann::Predict(char *test_file) {
+std::vector<int> ann::Predict(char *test_file, bool has_truth = 1) {
+  std::vector<int> predictionResult(num_test_instances_, 0);
+  // this array store our prediciton
+  std::vector<int> truth(num_test_instances_, 0);
+  // this array store the real result for comparison
+  std::vector<double> testInput((num_neuron_layer1_ + 1), 0);
+  // this array store each instance for processing
+
   std::ifstream testInputFile(test_file);
   if (!testInputFile) {
     std::cout << "Can't open test data file!" << std::endl;
-    return;
+    return predictionResult;
   }
 
-  std::string Buf;
-
-  // prepare memeory space for prediciton
-  int *realResult = new int[num_test_instances_];  // this array store the real
-                                                   // result for comparison
-  if (realResult == NULL) {
-    std::cout << "Error: memory could not be allocated";
-    return;
-  }
-  for (int w = 0; w < num_test_instances_; w++) {
-    realResult[w] = 0;
-  }
-
-  int *predictionResult =
-      new int[num_test_instances_];  // this array store our prediciton
-  if (predictionResult == NULL) {
-    std::cout << "Error: memory could not be allocated";
-    return;
-  }
-  for (int f = 0; f < num_test_instances_; f++) {
-    predictionResult[f] = 0;
-  }
-
-  double *testInput =
-      new double[num_neuron_layer1_ +
-                 1];  // this array store each instance for processing
   testInput[num_neuron_layer1_] = 1;
-
+  std::string Buf;
   // now process each test instance
   for (int i = 0; i < num_test_instances_; i++) {
     getline(testInputFile, Buf);
@@ -344,21 +325,20 @@ void ann::Predict(char *test_file) {
       getline(lineStream, Buf, ',');
       testInput[u] = stod(Buf);
     }
-    getline(lineStream, Buf, ',');
-    realResult[i] = stod(Buf);
-
+    if (has_truth) {
+      getline(lineStream, Buf, ',');
+      truth[i] = stod(Buf);
+    }
     predictionResult[i] = DoOnePrediction(testInput);
   }
 
   // calculate oeverall accuracy of our prediction
-  Accuracy(predictionResult, realResult);
+  if (has_truth) Accuracy(predictionResult, truth);
 
-  delete[] realResult;
-  delete[] predictionResult;
-  delete[] testInput;
+  return predictionResult;
 }
 
-int ann::DoOnePrediction(double *testInput) {
+int ann::DoOnePrediction(std::vector<double> &testInput) {
   // calculate layer 2 value
   for (int j = 0; j < num_neuron_layer2_; j++) {
     layer2_parameters_[j] = 0;

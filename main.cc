@@ -13,6 +13,7 @@ int main(int argc, char** argv) {
   clock_t begin;
   clock_t end;
   double time_spent;
+  std::vector<int> prediction_result;
 
   if (argc < 4) {
     std::cout << " You need to provide train_fileing data, test_file data, and "
@@ -45,7 +46,7 @@ int main(int argc, char** argv) {
 
   machinelearning::ann::ann aneuralnet(cfg_file, learnRate, momentum, maxEpoch);
   aneuralnet.Train(train_file);
-  aneuralnet.Predict(test_file);
+  prediction_result = aneuralnet.Predict(test_file, 1);
 
   end = clock();
   time_spent = (double)(end - begin) / CLOCKS_PER_SEC;

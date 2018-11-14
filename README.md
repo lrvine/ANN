@@ -10,7 +10,7 @@ Usage:
 
 Example:
 ```
-./ann data.txt test.txt cfg.txt 
+./ann breast_cancer_data/breast-cancer-wisconsin-400-records-train breast_cancer_data/breast-cancer-wisconsin-299-records-test breast_cancer_data/breast-cancer-wisconsin.cfg
 ```
 
 

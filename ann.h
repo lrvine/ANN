@@ -17,7 +17,7 @@ class ann : public MachineLearning {
       int num_layer_ = 3);
   ~ann();
   void Train(char*);
-  void Predict(char*);
+  std::vector<int> Predict(char*, bool);
 
  protected:
   double** input_train_instances_;
@@ -54,8 +54,9 @@ class ann : public MachineLearning {
   void PrintNetworkParameter();     // print out network parameter for debug
   void OptimizeNetworkParameter();  // optimize the network parameter via
                                     // training data
-  int DoOnePrediction(double*);  // calculate the probability of each choice and
-                                 // choose the greatest one as our prediction
+  int DoOnePrediction(std::vector<double>&);
+  // calculate the probability of each choice and choose the greatest one as our
+  // prediction
 
   double inline Sigmoid(double x) {
     x = exp(-x);
