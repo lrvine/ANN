@@ -27,44 +27,23 @@ ann::ann(char *configuration_file, double ilearn_rate_, double imomentum_,
   ParseConfiguration(configuration_file);
 }
 
-ann::~ann() {
-  delete[] layer2_parameters_;
-  delete[] layer3_parameters_;
-
-  for (int i = 0; i < (num_layer_ - 1); i++) {
-    for (int j = 0; j <= num_neuron_layer1_; j++) {
-      delete[] weight_of_network_[i][j];
-      delete[] weight_delta_of_network_[i][j];
-    }
-    delete[] weight_of_network_[i];
-    delete[] weight_delta_of_network_[i];
-    delete[] delta_gradient_of_network_[i];
-  }
-  delete[] weight_of_network_;
-  delete[] weight_delta_of_network_;
-  delete[] delta_gradient_of_network_;
-}
-
 void ann::Train(char *train_file) {
-  // allocate memory for training data
-  AllocateMemoryForTrainingData();
-  // read training data
+  PrepareMemoryForTrainingData();
   StoreTrainingData(train_file);
 
-  // allocate memory for num_neuron_layer2_
-  layer2_parameters_ = new double[num_neuron_layer2_ + 1];
+  layer2_parameters_.resize(num_neuron_layer2_ + 1);
 
   // init bais
   layer2_parameters_[num_neuron_layer2_] = 1;
 
-  // allocate memory for num_neuron_layer3_
-  layer3_parameters_ = new double[num_neuron_layer3_];
+  layer3_parameters_.resize(num_neuron_layer3_);
 
-  // allocate memory and initialize neural layer parameters
+  // initialize neural layer parameters
   InitNetworkParameter();
-  // PrintNetworkParameter();
+  #ifdef DEBUG
+    PrintNetworkParameter();
+  #endif
   OptimizeNetworkParameter();
-  ReleaseTrainingData();
 }
 
 void ann::ParseConfiguration(char *configuration_file) {
@@ -79,38 +58,23 @@ void ann::ParseConfiguration(char *configuration_file) {
   cfg >> num_train_instances_ >> num_test_instances_ >> num_neuron_layer1_ >>
       num_neuron_layer2_ >> num_neuron_layer3_;
   cfg.close();
-  // std::cout<<num_train_instances_<<num_test_instances_<<num_neuron_layer1_<<num_neuron_layer2_<<num_neuron_layer3_;
+  #ifdef DEBUG
+    std::cout<<num_train_instances_<<num_test_instances_<<num_neuron_layer1_<<num_neuron_layer2_<<num_neuron_layer3_;
+  #endif
 }
 
-void ann::AllocateMemoryForTrainingData() {
-  // allocate memory for input_train_instances_ data
-  input_train_instances_ = new (std::nothrow) double *[num_train_instances_];
-  if (input_train_instances_ == NULL) {
-    std::cout << "Error: memory could not be allocated";
-    return;
-  }
-  for (int b = 0; b < num_train_instances_; b++) {
-    input_train_instances_[b] = new double[num_neuron_layer1_ + 1];
-    if (input_train_instances_[b] == NULL) {
-      std::cout << "Error: memory could not be allocated";
-      return;
-    }
-  }
+void ann::PrepareMemoryForTrainingData() {
+  // prepare memory for input_train_instances_ data
+  input_train_instances_.resize(num_train_instances_);
+  for (int i = 0; i < num_train_instances_; ++i)
+    input_train_instances_[i].resize(num_neuron_layer1_ + 1);
 
-  // allocate memory for output_train_instances_ output
-  output_train_instances_ = new (std::nothrow) double *[num_train_instances_];
-  if (output_train_instances_ == NULL) {
-    std::cout << "Error: memory could not be allocated";
-    return;
-  }
-  for (int b = 0; b < num_train_instances_; b++) {
-    output_train_instances_[b] = new double[num_neuron_layer3_];
-    if (output_train_instances_[b] == NULL) {
-      std::cout << "Error: memory could not be allocated";
-      return;
-    }
-  }
+  // prepare memory for output_train_instances_ output
+  output_train_instances_.resize(num_train_instances_);
+  for (int i = 0; i < num_train_instances_; ++i)
+    output_train_instances_[i].resize(num_neuron_layer3_);
 }
+
 void ann::StoreTrainingData(char *train_file) {
   std::ifstream trainingDataFile;
   std::string Buf;
@@ -121,14 +85,14 @@ void ann::StoreTrainingData(char *train_file) {
   }
 
   // store input_train_instances_ data and output_train_instances_ output
-  for (int i = 0; i < num_train_instances_; i++) {
+  for (int i = 0; i < num_train_instances_; ++i) {
     getline(trainingDataFile, Buf);
     std::stringstream lineStream(Buf);
-    for (int j = 0; j < num_neuron_layer1_; j++) {
+    for (int j = 0; j < num_neuron_layer1_; ++j) {
       getline(lineStream, Buf, ',');
       input_train_instances_[i][j] = stod(Buf);
     }
-    for (int j = 0; j < num_neuron_layer3_; j++) {
+    for (int j = 0; j < num_neuron_layer3_; ++j) {
       getline(lineStream, Buf, ',');
       output_train_instances_[i][j] = stod(Buf);
     }
@@ -137,56 +101,39 @@ void ann::StoreTrainingData(char *train_file) {
   }
 }
 
-void ann::ReleaseTrainingData() {
-  for (int i = 0; i < num_train_instances_; i++) {
-    delete[] input_train_instances_[i];
-    delete[] output_train_instances_[i];
-  }
-  delete[] input_train_instances_;
-  delete[] output_train_instances_;
-}
-
 void ann::InitNetworkParameter() {
   std::random_device rd;
   std::mt19937 mt(rd());
   std::uniform_real_distribution<double> dist(0, 1);
 
-  weight_of_network_ = new double **[num_layer_ - 1];
-  weight_delta_of_network_ = new double **[num_layer_ - 1];
-  delta_gradient_of_network_ = new double *[num_layer_ - 1];
-  for (int i = 0; i < (num_layer_ - 1); i++) {
+  weight_of_network_.resize(num_layer_ - 1);
+  weight_delta_of_network_ .resize(num_layer_ - 1);
+  delta_gradient_of_network_.resize(num_layer_ - 1);
+  for (int i = 0; i < (num_layer_ - 1); ++i) {
+    //TODO merge by changing num_neuron_layer*_ to array
     if (i == 0) {
-      weight_of_network_[i] = new double *[num_neuron_layer1_ + 1];
-      weight_delta_of_network_[i] = new double *[num_neuron_layer1_ + 1];
-      delta_gradient_of_network_[i] = new double[num_neuron_layer2_];
-      for (int j = 0; j < num_neuron_layer2_; j++) {
-        delta_gradient_of_network_[i][j] = 0;
-      }
-      for (int j = 0; j <= num_neuron_layer1_; j++) {
-        weight_of_network_[i][j] = new double[num_neuron_layer2_ + 1];
-        weight_delta_of_network_[i][j] = new double[num_neuron_layer2_ + 1];
-        for (int k = 0; k < num_neuron_layer2_; k++) {
+      weight_of_network_[i].resize(num_neuron_layer1_ + 1);
+      weight_delta_of_network_[i].resize(num_neuron_layer1_ + 1);
+      delta_gradient_of_network_[i].resize(num_neuron_layer2_, 0);
+
+      for (int j = 0; j <= num_neuron_layer1_; ++j) {
+        weight_of_network_[i][j].resize(num_neuron_layer2_ + 1);
+        weight_delta_of_network_[i][j].resize(num_neuron_layer2_ + 1, 0);
+        for (int k = 0; k < num_neuron_layer2_; ++k)
           weight_of_network_[i][j][k] =
               (2 * (dist(mt) - 0.5) * max_weight_for_init_);
-          weight_delta_of_network_[i][j][k] = 0;
-        }
       }
     }
     if (i == 1) {
-      weight_of_network_[i] = new double *[num_neuron_layer2_ + 1];
-      weight_delta_of_network_[i] = new double *[num_neuron_layer2_ + 1];
-      delta_gradient_of_network_[i] = new double[num_neuron_layer3_];
-      for (int j = 0; j < num_neuron_layer3_; j++) {
-        delta_gradient_of_network_[i][j] = 0;
-      }
-      for (int j = 0; j <= num_neuron_layer2_; j++) {
-        weight_of_network_[i][j] = new double[num_neuron_layer3_];
-        weight_delta_of_network_[i][j] = new double[num_neuron_layer3_];
-        for (int k = 0; k < num_neuron_layer3_; k++) {
+      weight_of_network_[i].resize(num_neuron_layer2_ + 1);
+      weight_delta_of_network_[i].resize(num_neuron_layer2_ + 1);
+      delta_gradient_of_network_[i].resize(num_neuron_layer3_, 0);
+      for (int j = 0; j <= num_neuron_layer2_; ++j) {
+        weight_of_network_[i][j].resize(num_neuron_layer3_);
+        weight_delta_of_network_[i][j].resize(num_neuron_layer3_, 0);
+        for (int k = 0; k < num_neuron_layer3_; ++k)
           weight_of_network_[i][j][k] =
               (2 * (dist(mt) - 0.5) * max_weight_for_init_);
-          weight_delta_of_network_[i][j][k] = 0;
-        }
       }
     }
   }
@@ -210,13 +157,13 @@ void ann::PrintNetworkParameter() {
 }
 
 void ann::OptimizeNetworkParameter() {
-  /*
-  // shuffle input_train_instances_ pattern order  : This didn't seems to
-  improve prediction rate. Comment out for now. srand ( unsigned ( std::time(0)
-  ) ); vector<int> ilist; for(int i=0; i<num_train_instances_ ; i++){
-          ilist.push_back(i);
-  }
-  */
+
+#ifdef SHUFFLE_INPUT 
+  srand ( unsigned ( std::time(0)) );
+  std::vector<int> ilist;
+  for(int i=0; i<num_train_instances_ ; ++i) {ilist.push_back(i);}
+#endif
+
   unsigned long long int epoch = 1;
   double error = std::numeric_limits<double>::max();
   double perror = std::numeric_limits<double>::max();
@@ -224,21 +171,23 @@ void ann::OptimizeNetworkParameter() {
   while (epoch <= max_epoch_ && deltaerror > target_error_) {
     // train each pattern for one epoch
     error = 0;
-    // random_shuffle(ilist.begin(),ilist.end());
-    for (int i = 0; i < num_train_instances_; i++) {
+#ifdef SHUFFLE_INPUT 
+    random_shuffle(ilist.begin(),ilist.end());
+#endif
+    for (int i = 0; i < num_train_instances_; ++i) {
       // calculate layer 2 value
-      for (int j = 0; j < num_neuron_layer2_; j++) {
+      for (int j = 0; j < num_neuron_layer2_; ++j) {
         layer2_parameters_[j] = 0;
-        for (int k = 0; k <= num_neuron_layer1_; k++) {
+        for (int k = 0; k <= num_neuron_layer1_; ++k) {
           layer2_parameters_[j] += (Sigmoid(input_train_instances_[i][k]) *
                                     weight_of_network_[0][k][j]);
         }
         layer2_parameters_[j] = Sigmoid(layer2_parameters_[j]);
       }
       // calculate layer 3 value
-      for (int j = 0; j < num_neuron_layer3_; j++) {
+      for (int j = 0; j < num_neuron_layer3_; ++j) {
         layer3_parameters_[j] = 0;
-        for (int k = 0; k <= num_neuron_layer2_; k++) {
+        for (int k = 0; k <= num_neuron_layer2_; ++k) {
           layer3_parameters_[j] +=
               (layer2_parameters_[k] * weight_of_network_[1][k][j]);
         }
@@ -247,21 +196,21 @@ void ann::OptimizeNetworkParameter() {
       // start backpropagation: calculate error and partial derivative of the
       // error with respect to weights of layer3 Refer to
       // https://en.wikipedia.org/wiki/Backpropagation
-      for (int j = 0; j < num_neuron_layer3_; j++) {
+      for (int j = 0; j < num_neuron_layer3_; ++j) {
         error += pow((layer3_parameters_[j] -
                       Sigmoid(output_train_instances_[i][j])),
                      2) /
                  2;
         // partial derivative with Sigmoid could be simplified as
-        // (Ooutput-Target)*Output*(1-Output)
+        // (Ooutput-Target) * Output * (1-Output)
         delta_gradient_of_network_[1][j] =
             ((layer3_parameters_[j] - Sigmoid(output_train_instances_[i][j])) *
              layer3_parameters_[j] * (1 - layer3_parameters_[j]));
       }
       // backprogapate to layer 2
-      for (int j = 0; j < num_neuron_layer2_; j++) {
+      for (int j = 0; j < num_neuron_layer2_; ++j) {
         delta_gradient_of_network_[0][j] = 0;
-        for (int k = 0; k < num_neuron_layer3_; k++) {
+        for (int k = 0; k < num_neuron_layer3_; ++k) {
           delta_gradient_of_network_[0][j] +=
               (delta_gradient_of_network_[1][k] * weight_of_network_[1][j][k]);
         }
@@ -270,8 +219,8 @@ void ann::OptimizeNetworkParameter() {
                                            (1 - layer2_parameters_[2]);
       }
       // update layer 2 to 3 weight_of_network_
-      for (int j = 0; j < num_neuron_layer3_; j++) {
-        for (int k = 0; k <= num_neuron_layer2_; k++) {
+      for (int j = 0; j < num_neuron_layer3_; ++j) {
+        for (int k = 0; k <= num_neuron_layer2_; ++k) {
           weight_delta_of_network_[1][k][j] =
               learn_rate_ * layer2_parameters_[k] *
                   delta_gradient_of_network_[1][j] +
@@ -280,8 +229,8 @@ void ann::OptimizeNetworkParameter() {
         }
       }
       // update layer 1 to 2 weight_of_network_
-      for (int j = 0; j < num_neuron_layer2_; j++) {
-        for (int k = 0; k <= num_neuron_layer1_; k++) {
+      for (int j = 0; j < num_neuron_layer2_; ++j) {
+        for (int k = 0; k <= num_neuron_layer1_; ++k) {
           weight_delta_of_network_[0][k][j] =
               learn_rate_ * input_train_instances_[i][k] *
                   delta_gradient_of_network_[0][j] +
@@ -317,13 +266,13 @@ std::vector<int> ann::Predict(char *test_file, bool has_truth = 1) {
   testInput[num_neuron_layer1_] = 1;
   std::string Buf;
   // now process each test instance
-  for (int i = 0; i < num_test_instances_; i++) {
+  for (int i = 0; i < num_test_instances_; ++i) {
     getline(testInputFile, Buf);
     std::stringstream lineStream(Buf);
 
-    for (int u = 0; u < num_neuron_layer1_; u++) {
+    for (int j = 0; j < num_neuron_layer1_; ++j) {
       getline(lineStream, Buf, ',');
-      testInput[u] = stod(Buf);
+      testInput[j] = stod(Buf);
     }
     if (has_truth) {
       getline(lineStream, Buf, ',');
@@ -340,9 +289,9 @@ std::vector<int> ann::Predict(char *test_file, bool has_truth = 1) {
 
 int ann::DoOnePrediction(std::vector<double> &testInput) {
   // calculate layer 2 value
-  for (int j = 0; j < num_neuron_layer2_; j++) {
+  for (int j = 0; j < num_neuron_layer2_; ++j) {
     layer2_parameters_[j] = 0;
-    for (int k = 0; k <= num_neuron_layer1_; k++) {
+    for (int k = 0; k <= num_neuron_layer1_; ++k) {
       layer2_parameters_[j] +=
           (Sigmoid(testInput[k]) * weight_of_network_[0][k][j]);
     }
@@ -350,9 +299,9 @@ int ann::DoOnePrediction(std::vector<double> &testInput) {
   }
 
   // calculate layer 3 value
-  for (int j = 0; j < num_neuron_layer3_; j++) {
+  for (int j = 0; j < num_neuron_layer3_; ++j) {
     layer3_parameters_[j] = 0;
-    for (int k = 0; k <= num_neuron_layer2_; k++) {
+    for (int k = 0; k <= num_neuron_layer2_; ++k) {
       layer3_parameters_[j] +=
           (layer2_parameters_[k] * weight_of_network_[1][k][j]);
     }

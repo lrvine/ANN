@@ -15,15 +15,14 @@ class ann : public MachineLearning {
       double momentum_ = 0.2, double max_epoch_ = 5000,
       double max_weight_for_init_ = 0.3, double target_error_ = 0.000000000001,
       int num_layer_ = 3);
-  ~ann();
   void Train(char*);
   std::vector<int> Predict(char*, bool);
 
  protected:
-  double** input_train_instances_;
+  std::vector<std::vector<double> > input_train_instances_;
   // store the whole input of training instances
-  double** output_train_instances_;  // store the whole output of training
-                                     // instances
+  std::vector<std::vector<double> > output_train_instances_;  
+  // store the whole output of training instances
 
   // Neural Network structure
   int num_neuron_layer1_;
@@ -32,11 +31,11 @@ class ann : public MachineLearning {
   int num_layer_;
 
   // Neural Network parameters
-  double* layer2_parameters_;
-  double* layer3_parameters_;
-  double*** weight_of_network_;
-  double*** weight_delta_of_network_;
-  double** delta_gradient_of_network_;
+  std::vector<double> layer2_parameters_;
+  std::vector<double> layer3_parameters_;
+  std::vector<std::vector<std::vector<double> > > weight_of_network_;
+  std::vector<std::vector<std::vector<double> > > weight_delta_of_network_;
+  std::vector<std::vector<double> > delta_gradient_of_network_;
 
   // Neural Netowrk attributes
   double target_error_;
@@ -46,10 +45,9 @@ class ann : public MachineLearning {
   int64_t max_epoch_;
 
   void ParseConfiguration(char*);        // read configuration file
-  void AllocateMemoryForTrainingData();  // allocate memory for training
+  void PrepareMemoryForTrainingData();   // allocate memory for training
                                          // data
   void StoreTrainingData(char*);         // store training data
-  void ReleaseTrainingData();            // store training data
   void InitNetworkParameter();           // initialize the netowrk
   void PrintNetworkParameter();     // print out network parameter for debug
   void OptimizeNetworkParameter();  // optimize the network parameter via
