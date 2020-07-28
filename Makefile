@@ -1,10 +1,10 @@
-CC=g++
-CFLAGS= -std=c++2a -c -Ofast -march=native -mavx2 -Wall
-SOURCE=main.cc machinelearning.cc ann.cc
-LDFLAGS=
-OBJECTS= $(SOURCE:.cc=.o)
+CC = g++
+CFLAGS = -std=c++2a -c -Ofast -march=native -Wall
+SOURCE = main.cc machinelearning.cc ann.cc
+LDFLAGS =
+OBJECTS = $(SOURCE:.cc=.o)
 
-EXECUTABLE= ann
+EXECUTABLE = ann
 
 
 all:  $(SOURCE) $(EXECUTABLE)
