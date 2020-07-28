@@ -27,3 +27,11 @@ Configuration file format:
 ```
 
 Data set is acquired from [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets.html)
+
+
+
+Performance:
+When running 5000 epoch with compile option "-std=c++2a -c -Ofast -march=native -Wall" on 1.6 GHz Dual-Core Intel Core i5,
+putting everything in a few big functions has the best performance, it cost around 2.68 seconds.
+Breaking up the functions to align with clean code practice will slow it to 2.71 seconds.
+Replace all dynamically allocated array with vectors which is the current version will further slow it to 3.52 seconds.
