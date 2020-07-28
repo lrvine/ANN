@@ -1,6 +1,5 @@
 CC=g++
-#CFLAGS= -std=c++11 -c -g -Wall
-CFLAGS= -c -Ofast -march=native -mavx2 -Wall
+CFLAGS= -std=c++2a -c -Ofast -march=native -mavx2 -Wall
 SOURCE=main.cc machinelearning.cc ann.cc
 LDFLAGS=
 OBJECTS= $(SOURCE:.cc=.o)
